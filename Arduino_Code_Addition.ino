@@ -1,11 +1,11 @@
-//Goes in UD-IDS-LAB/udssc_car/V4Car/V4Car.ino
+//Changes to /udssc_car-with_sensors/V4Car/V4Car.ino
 
-// After line 6
+//Line 6
 #include <Zumo32U4IMU.h>
 
 Zumo32U4IMU sensors;
 
-//... ~ line 160 (before PID control):
+//... Line 164
 // Data Collection and Export ------------------------------------------------------------------------------------
   sensors.read(); //read accel, mag, & gyro data; velo data already found 
 
