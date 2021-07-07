@@ -1,5 +1,4 @@
-﻿# Designed to go in UD-IDS-LAB/udssc_car/scripts/path_controller.py
-# Tomorrow I should add where each section goes in the code
+# Designed to go in UD-IDS-LAB/udssc_car/scripts/path_controller.py
 
 
 ‘’’ All sensor data comes through the serial port from the arduino
@@ -15,19 +14,19 @@ Structure: sensorData = array of doubles with length of 80 bytes
 
 ‘’’ NOTE: HOW I’M DOING THIS MAY INTERFERE WITH SOME FUNCTIONS LIKE getSOC ‘’’
 
-
+# line ~38 ----------------
 # create files
 file1_name = ‘VICON_Data_Run_N-Car_Number_X’
 file2_name = ‘Sensor_Data_Run_N-Car_Number_X’
 
-
-f1 = open(file1_name, “w”)         # file for VICON data
-f2 = open(file2_name, “w”)         # file for sensor data
-
+# line ~
+global f1 = open(file1_name, “w”)         # file for VICON data
+global f2 = open(file2_name, “w”)         # file for sensor data
 
 # Add headers to files
 saveData(f1, ‘Time’, [‘X’, ‘Y’, ‘Heading Angle’, ‘Angular Velocity’, ‘Speed’])
-saveData(f2, ‘Time’, [‘Heading Velocity’, ‘Acceleration 1’, ‘Acceleration 2’, ‘Acceleration 3’, ‘Compass 1’, ‘Compass 2’, ‘Compass 3’, ‘Gyro 1’, ‘Gyro 2’, ‘Gyro 3’])
+saveData(f2, ‘Time’, [‘Heading Velocity’, ‘Acceleration 1’, ‘Acceleration 2’, ‘Acceleration 3’, ‘Compass 1’, ‘Compass 2’, ‘Compass 3’, 
+‘Gyro 1’, ‘Gyro 2’, ‘Gyro 3’])
 
 
 # 2 components of acceleration, 2 compass components, and 2 gyro components are useless 
@@ -61,7 +60,8 @@ while running:
         vThetaDot = self.yaw_dot; vSpeed = self.velocity_current; vTime = rospy.get_time()
         
         # I may need to export the data from the arduino as a string instead of an array of doubles
-        sVelo = self.ser.read(8); sAccel0 = self.ser.read(8); sAccel1 = self.ser.read(8); sAccel2 = self.ser.read(8); sMag0 = self.ser.read(8); sMag1 = self.ser.read(8); sMag2 = self.ser.read(8); sGyro0 = self.ser.read(8); sGyro1 = self.ser.read(8); sGyro2 = self.ser.read(8);
+        sVelo = self.ser.read(8); sAccel0 = self.ser.read(8); sAccel1 = self.ser.read(8); sAccel2 = self.ser.read(8); sMag0 = self.ser.read(8); 
+        sMag1 = self.ser.read(8); sMag2 = self.ser.read(8); sGyro0 = self.ser.read(8); sGyro1 = self.ser.read(8); sGyro2 = self.ser.read(8);
 
         ViconState = [ vX, vY, vTheta, vThetaDot, vSpeed ]
         sensorState = [ sVelo, sAccel0, sAccel1, sAccel2, sMag0, sMag1, sMag2, sGyro0, sGyro1, sGyro2 ]
