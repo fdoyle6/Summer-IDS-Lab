@@ -17,8 +17,8 @@ Structure: sensorData = array of doubles with length of 80 bytes
 
 # line ~38 ----------------
 # Data file names - NOTE: Change N & X each run
-file1_name = ‘VICON_Data_Run_N-Car_Number_X’
-file2_name = ‘Sensor_Data_Run_N-Car_Number_X’
+file1_name = ‘VICON_Data_Run_N-Car_Number_X.txt’
+file2_name = ‘Sensor_Data_Run_N-Car_Number_X.txt’
 
 # line ~200 ---------------------
 # Create files
