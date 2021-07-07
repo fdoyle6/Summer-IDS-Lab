@@ -2,7 +2,7 @@
 # This will probably need some tweaking before it goes into that code though
 
 
-""" All sensor data comes through the serial port from the arduino
+''' All sensor data comes through the serial port from the arduino
 Structure: sensorData = array of doubles with length of 80 bytes
         sensorData[0:8] - heading velocity
         sensorData[8:32] - acceleration (vector)
@@ -10,28 +10,27 @@ Structure: sensorData = array of doubles with length of 80 bytes
         sensorData[32:56] - orientation (vector)
                 (each element 8 bytes long)
         sensorData[56:80] - angular velo (vector)
-                (each element 8 bytes long) """
+                (each element 8 bytes long) '''
 
 
-# ** NOTE: HOW I’M DOING THIS MAY INTERFERE WITH SOME FUNCTIONS LIKE getSOC **
+# ** NOTE: HOW I'M DOING THIS MAY INTERFERE WITH SOME FUNCTIONS LIKE getSOC **
 
 # line ~38 ----------------
 # Data file names - NOTE: Change N & X each run
-file1_name = ‘VICON_Data_Run_N-Car_Number_X.txt’
-file2_name = ‘Sensor_Data_Run_N-Car_Number_X.txt’
+file1_name = 'VICON_Data_Run_N-Car_Number_X.txt'
+file2_name = 'Sensor_Data_Run_N-Car_Number_X.txt'
 
 # line ~200 ---------------------
 # Create files
-global f1 = open(file1_name, “w”)         # file for VICON data
-global f2 = open(file2_name, “w”)         # file for sensor data
+global f1 = open(file1_name, 'w')         # file for VICON data
+global f2 = open(file2_name, 'w')         # file for sensor data
 
 # Add headers to data files
-saveData(f1, ‘Time’, [‘X’, ‘Y’, ‘Heading Angle’, ‘Angular Velocity’, ‘Speed’])
-saveData(f2, ‘Time’, [‘Heading Velocity’, ‘Acceleration 1’, ‘Acceleration 2’, ‘Acceleration 3’, ‘Compass 1’, ‘Compass 2’, ‘Compass 3’, 
-‘Gyro 1’, ‘Gyro 2’, ‘Gyro 3’])
+saveData(f1, 'Time', ['X', 'Y', 'Heading Angle', 'Angular Velocity', 'Speed'])
+saveData(f2, 'Time', ['Heading Velocity', 'Acceleration 1', 'Acceleration 2', 'Acceleration 3', 'Compass 1', 'Compass 2', 'Compass 3', 'Gyro 1', 'Gyro 2', 'Gyro 3'])
 
 # 2 components of acceleration, 2 compass components, and 2 gyro components are useless 
-# for right now, but I’m keeping all of them so I know how the sensors work completely. 
+# for right now, but I'm keeping all of them so I know how the sensors work completely. 
 
 ''' ----- Running variables: should I put them in __init__ (~line 117) & change them to self.variable or take the already defined variables out? --------- '''
 # sensor and vicon data variables
@@ -77,9 +76,9 @@ f1.close(); f2.close()
 def saveData(file_obj, time, stateVec):
         saveString = str(time)
         for ele in stateVec:
-                saveString.append(‘\t’ + str(ele))         #use tabs so I can use np.genfromtxt() to analyze 
-        saveString.append(‘\n’)
-        file_obj.write(saveString); saveString = ‘\0’         # just for scoping stuff
+                saveString.append('\t' + str(ele))         #use tabs so I can use np.genfromtxt() to analyze 
+        saveString.append('\n')
+        file_obj.write(saveString); saveString = '\0'         # just for scoping stuff
 
 
 
