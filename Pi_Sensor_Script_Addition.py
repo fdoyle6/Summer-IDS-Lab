@@ -1,5 +1,5 @@
-# Designed to go in UD-IDS-LAB/udssc_car/scripts/path_controller.py
-# This will probably need some tweaking before it goes into that code though
+# Designed to go in /udssc_car-with_sensors/scripts/path_controller.py
+# The vast majority of this code was not written by me
 
 
 ''' All sensor data comes through the serial port from the arduino
@@ -15,13 +15,13 @@ Structure: sensorData = array of doubles with length of 80 bytes
 
 # ** NOTE: HOW I'M DOING THIS MAY INTERFERE WITH SOME FUNCTIONS LIKE getSOC **
 
-# line ~38 ----------------
+# line 40 ----------------
 # Data file names - NOTE: Change N & X each run
 global file1_name, file2_name, f1, f2
 file1_name = 'VICON_Data_Run_N-Car_Number_X.txt'
 file2_name = 'Sensor_Data_Run_N-Car_Number_X.txt'
 
-# line ~200 ---------------------
+# line 257 ---------------------
 # Create files
 global f1 = open(file1_name, 'w')         # file for VICON data
 global f2 = open(file2_name, 'w')         # file for sensor data
@@ -33,7 +33,8 @@ saveData(f2, 'Time', ['Heading Velocity', 'Acceleration 1', 'Acceleration 2', 'A
 # 2 components of acceleration, 2 compass components, and 2 gyro components are useless 
 # for right now, but I'm keeping all of them so I know how the sensors work completely. 
 
-''' ----- Running variables: should I put them in __init__ (~line 117) & change them to self.variable or take the already defined variables out? --------- '''
+# Line 124 ----------------------------
+# Running variables
 # sensor and vicon data variables
                 # Running variables
 		# vicon and sensor data variables
@@ -84,7 +85,7 @@ saveData(f2, 'Time', ['Heading Velocity', 'Acceleration 1', 'Acceleration 2', 'A
 		self.oldViconState =  [ o_vX, o_vY, o_vTheta, o_vThetaDot, o_vSpeed ]
 		self.oldSensorState = [ o_sVelo, o_sAccel0, o_sAccel1, o_sAccel2, o_sMag0, o_sMag1, o_sMag2, o_sGyro0, o_sGyro1, o_sGyro2 ]
 
-# In Update ~line 460 (used inside a loop) --------------------------------------------------
+# In Update Line 528 (used inside a loop) --------------------------------------------------
 # probably don't need new variables?
 		self.vX = self.pos[0][0]
 		self.vY = self.pos[0][1]
@@ -117,19 +118,19 @@ saveData(f2, 'Time', ['Heading Velocity', 'Acceleration 1', 'Acceleration 2', 'A
 		if not (np.allclose(sensorState, oldSensorState)):
         		saveData(f2, sTime, sensorState)
         		oldSensorState = sensorState; o_sTime = sTime
-# in shutdown before exit() ~line 625 -----------------------------
+
+			
+# in shutdown before exit() Line 728 -----------------------------
 f1.close(); f2.close()
 
 
-# Before if __name__ == '__main__' ~line 805 -------------------------
+# Before if __name__ == '__main__' Line 909 -------------------------
 def saveData(file_obj, time, stateVec):
         saveString = str(time)
         for ele in stateVec:
                 saveString.append('\t' + str(ele))         #use tabs so I can use np.genfromtxt() to analyze 
         saveString.append('\n')
         file_obj.write(saveString); saveString = '\0'         # just for scoping stuff
-
-
-
-
-# Fin.
+	
+	
+# Fin
