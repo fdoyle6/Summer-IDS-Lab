@@ -9,6 +9,7 @@
 #define encoder0PinB      1       // encoder B pin
 
 Zumo32U4Motors motors;
+Zumo32U4IMU sensors;
 
 //
 double lastTime = millis();       // sets lastTime to the current time when the program starts
@@ -59,9 +60,6 @@ double derivative = 0;
 double pidTerm = 0;
 int finalInput = 0;
 double current = 0;
-
-//sensor variables
-double sensorData[80];
 
 //takes note of rotations b/w cycleTimes
 void indexRise(){
@@ -163,12 +161,19 @@ void loop() {
   }
 
 
-  // Data Collection and Export ------------------------------------------------------------------------------------
-  read(); //read accel, mag, & gyro data; velo data already found 
+// Data Collection and Export ------------------------------------------------------------------------------------
+  sensors.read(); //read accel, mag, & gyro data; velo data already found 
 
-  sensorData[0] = actualVelocity;
-  sensorData[8] = a; sensorData[32] = m; sensorData[56] = g;
-  Serial.write(sensorData, 80); 
+  Serial.write(actualVelocity);
+  Serial.write(sensors.a.x);
+  Serial.write(sensors.a.y);
+  Serial.write(sensors.a.z);
+  Serial.write(sensors.m.x);
+  Serial.write(sensors.m.y);
+  Serial.write(sensors.m.z);
+  Serial.write(sensors.g.x);
+  Serial.write(sensors.g.y);
+  Serial.write(sensors.g.z);
 
 
   // ****************** PID CONTROL ********************** //
