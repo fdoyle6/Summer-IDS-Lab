@@ -1,0 +1,41 @@
+#! /bin/bash
+### Run with sudo ###
+
+#!/bin/bash
+#Assign existing hostname to $hostn
+hostn=$(cat /etc/hostname)
+
+#Display existing hostname
+echo "Welcome to the UDSSC Car Configurator Utility Program"
+echo "UDSSCCUP for short"
+echo "Existing hostname is $hostn"
+
+#Ask for new hostname $newhost
+echo "Please enter a new hostname: "
+read newhost
+
+#change hostname in /etc/hosts & /etc/hostname
+sudo sed -i "s/$hostn/$newhost/g" /etc/hosts
+sudo sed -i "s/$hostn/$newhost/g" /etc/hostname
+
+#display new hostname
+echo "Your new hostname is $newhost"
+
+#delete all network settings
+sudo rm -r /etc/NetworkManager/system-connections/
+mkdir /etc/NetworkManager/system-connections
+
+#ask for network name & password
+#echo "Please enter the network name: "
+#read essid
+echo "Please enter the network's password: "
+read -s netpass
+
+#connect to network
+nmcli d wifi connect UDSSC password $netpass
+
+echo "Network configured."
+
+#Press a key to reboot
+read -s -n 1 -p "Press any key to reboot"
+sudo reboot

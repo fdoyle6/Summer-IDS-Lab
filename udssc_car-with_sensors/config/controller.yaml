@@ -1,0 +1,7 @@
+# Controller gains for path_controller:
+non_linear_gains:
+  Q: 1
+  P: 1
+  k: 0.68
+  k_0: 0.04
+  threshold: 0.08

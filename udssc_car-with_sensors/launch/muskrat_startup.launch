@@ -1,0 +1,10 @@
+<launch>
+
+	<group ns="$(env ROS_HOSTNAME)">
+
+  	<node pkg="udssc_car" type="path_controller.py" name="path_controller" output="screen"/>
+		<!--<node pkg="udssc_car" type="camera_feed.py" name="camera_feed" output="screen"/>-->
+		<node pkg="udssc_srvs" type="battery.py" name="battery_server" output="screen"/>
+	</group>
+
+</launch>
