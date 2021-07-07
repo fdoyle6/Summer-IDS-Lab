@@ -20,12 +20,14 @@ is in here will be the same form as it is in the hidden programs.
   - Arduino_Code_Addition.ino - A few lines of code to be added to the Arduino that performs 
   the low level controls for the system so it would record data from the sensors in the car
   (from a Zumo 32U4) and send it to the Raspberry Pi that wirelessly connects with the CCS.
+  This was used in the file at ./udssc_car-with_sensors/V4Car/V4Car.ino .
   
   - Pi_Sensor_Script_Addition.py - The additions to the code that already runs on the RasPi
   during an experiment. This extra code allows the Pi to accept and save data from the Arduino
   and VICON while also exporting it to other files that will be analyzed later to calculate 
   the variances in each measurement. This code will later include the code to estimate the
   state of the system (and uncertainty) using the previously mentioned Extended Kalman Filter.
+  This was used in ./udssc_car-with_sensors/scripts/path_controller.py .
   
   - Variance_Calculator.py - The script used to calculate the uncertatainties (variances) of 
   each sensor on-board the car. This uses the files output by the Pi_Sensor_Script_Addition.py
