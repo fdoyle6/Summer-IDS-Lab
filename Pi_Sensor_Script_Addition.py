@@ -1,7 +1,7 @@
 # Designed to go in UD-IDS-LAB/udssc_car/scripts/path_controller.py
 
 
-‘’’ All sensor data comes through the serial port from the arduino
+""" All sensor data comes through the serial port from the arduino
 Structure: sensorData = array of doubles with length of 80 bytes
         sensorData[0:8] - heading velocity
         sensorData[8:32] - acceleration (vector)
@@ -9,10 +9,10 @@ Structure: sensorData = array of doubles with length of 80 bytes
         sensorData[32:56] - orientation (vector)
                 (each element 8 bytes long)
         sensorData[56:80] - angular velo (vector)
-                (each element 8 bytes long) ‘’’
+                (each element 8 bytes long) """
 
 
-‘’’ NOTE: HOW I’M DOING THIS MAY INTERFERE WITH SOME FUNCTIONS LIKE getSOC ‘’’
+# ** NOTE: HOW I’M DOING THIS MAY INTERFERE WITH SOME FUNCTIONS LIKE getSOC **
 
 # line ~38 ----------------
 # create files
