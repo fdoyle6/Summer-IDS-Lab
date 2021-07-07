@@ -3,7 +3,8 @@
 ### GitHub Summary: 
 The programs written over the summer of 2021 while working for the University of Delaware's 
 Information and Decision Sciences (IDS) Lab. For more information about the lab and its other
-projects, please visit https://sites.udel.edu/ids-lab/ .
+projects, please visit https://sites.udel.edu/ids-lab/ . This repository and README will be
+updated somewhat reguarly as progress is made on these projects.
 
 ### Detailed Repository Description: 
 During the summer going into my senior year at UD, I created a set of programs to estimate the 
