@@ -3,19 +3,19 @@
 // After line 6
 #include <Zumo32U4IMU.h>
 
-// ... line ~61
-//sensor variables
-double sensorData[80];
-
+Zumo32U4IMU sensors;
 
 //... ~ line 160 (before PID control):
 // Data Collection and Export ------------------------------------------------------------------------------------
-read(); //read accel, mag, & gyro data; velo data already found
+  sensors.read(); //read accel, mag, & gyro data; velo data already found 
 
-
-sensorData[0] = actualVelocity;
-sensorData[8] = a; sensorData[32] = m; sensorData[56] = g;
-Serial.write(sensorData, 80);
-//may need to send sensor data as string if weird with being doubles
-
-//if this doesn’t work follow this link for steps to finish examples
+  Serial.write(actualVelocity);
+  Serial.write(sensors.a.x);
+  Serial.write(sensors.a.y);
+  Serial.write(sensors.a.z);
+  Serial.write(sensors.m.x);
+  Serial.write(sensors.m.y);
+  Serial.write(sensors.m.z);
+  Serial.write(sensors.g.x);
+  Serial.write(sensors.g.y);
+  Serial.write(sensors.g.z);
