@@ -17,7 +17,7 @@ the SSC is in a private repository so the full programs will not be shown, thoug
 is in here will be the same form as it is in the hidden programs.
 
 ### File Descriptions:
-  - Arduino_Code_Addition.cpp - A few lines of code to be added to the Arduino that performs 
+  - Arduino_Code_Addition.ino - A few lines of code to be added to the Arduino that performs 
   the low level controls for the system so it would record data from the sensors in the car
   (from a Zumo 32U4) and send it to the Raspberry Pi that wirelessly connects with the CCS.
   
