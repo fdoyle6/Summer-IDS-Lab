@@ -1,4 +1,5 @@
 # Designed to go in UD-IDS-LAB/udssc_car/scripts/path_controller.py
+# This will probably need some tweaking before it goes into that code though
 
 
 """ All sensor data comes through the serial port from the arduino
