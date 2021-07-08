@@ -19,7 +19,10 @@ is in here will be the same form as it is in the hidden programs.
 ### File Descriptions:
   - udssc_car-with_sensors - the code that the SSC uses in its cars to run experiments, with
   a few small additions (listed in Arduino_Code_Addition.ino and Pi_Sensor_Script_Addition.py, 
-  below) to allow for sensor measurements, relays, and recordings. See below for more details.
+  below) to allow for sensor measurements, relays, and recordings. The vast majority of this 
+  code I did not write, but the original is located in a private repo (that should eventually
+  be made public) [code posted with permission of the owners]. For more information on what 
+  I did specifically, see the projects below.
   
   - Arduino_Code_Addition.ino - A few lines of code to be added to the Arduino that performs 
   the low level controls for the system so it would record data from the sensors in the car
