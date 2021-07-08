@@ -18,7 +18,7 @@ is in here will be the same form as it is in the hidden programs.
 
 ### File Descriptions:
   - udssc_car-with_sensors - the code that the SSC uses in its cars to run experiments, with
-  a few small changes (listed in Arduino_Code_Addition.ino and Pi_Sensor_Script_Addition.py, 
+  a few small additions (listed in Arduino_Code_Addition.ino and Pi_Sensor_Script_Addition.py, 
   below) to allow for sensor measurements, relays, and recordings. See below for more details.
   
   - Arduino_Code_Addition.ino - A few lines of code to be added to the Arduino that performs 
