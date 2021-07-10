@@ -4,8 +4,9 @@ import numpy as np
 
 # Assume oldX is the known state of the system and we're trying
 # to calculate X (X[i+1]) from oldX (X[i])
-X = np.array([x, y, vh, vl, theta, theta_dot]) # really will be 0's but here for readability
-oldX = np.array([oldX1, oldX2, oldX3, oldX4, oldX5, oldX6])
+# X = np.array([x, y, vh, vl, theta, theta_dot]) # really will be 0's but here for readability
+oldX = np.array([oldX1, oldX2, oldX3, oldX4, oldX5, oldX6]) # filled with the previous time-step's X
+X = np.zeros_like(oldX)
 
 # use X_dot[i] = F[i]*X[i] + B*U[i]; X[i+1] = X_dot[i]*dt + X[i] (only need one X_dot)
 X_dot = np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0])
