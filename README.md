@@ -39,3 +39,8 @@ is in here will be the same form as it is in the hidden programs.
   - Variance_Calculator.py - The script used to calculate the uncertatainties (variances) of 
   each sensor on-board the car. This uses the files output by the Pi_Sensor_Script_Addition.py
   program additions. 
+  
+  - kalman_filter_calculation_script.py - The script to actually estimate the state of the 
+  system using an Extended Kalman Filter as well as output the confidence in the estimate.
+  This is, also, designed to be in another program, specifically the path_controller script
+  at ./udssc_car-with_sensors/scripts/path_controller.py .
