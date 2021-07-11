@@ -59,11 +59,11 @@ V_noise = np.diag([ s_x, s_y, s_vh, s_vl, s_theta, s_theta_dot ])
 # Kalman gain -> should either be 6x4 or 4x6 - which one is it?
 K_f = np.zeros((6, 4), dtype = float)
 
-# Solv Riccatti equation
+# Solve Riccati equation
 '''Is this technically a continuous or discrete system to calc the Kalman gain?'''
 # What are the dimenstions of the solution of a Riccatti Equ?
 Ric_Soln = np.zeros_like(X_hat)
-Ric_Soln = l_alg(F.transpose, C.transpose, V_dist, V_noise)
+Ric_Soln = l_alg.solve_continuous_are(F.transpose, C.transpose, V_dist, V_noise)
 
 # Calculate Kalman gain
 K_f = np.matmul(np.matmul(Ric_Soln, C.transpose), V_noise)
