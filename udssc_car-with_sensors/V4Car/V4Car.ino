@@ -5,6 +5,7 @@
 #include <Wire.h>
 #include <Zumo32U4.h>       //Include zumo motors
 #include <Zumo32U4IMU.h>
+
 #define encoder0PinA      0      // encoder A pin
 #define encoder0PinB      1       // encoder B pin
 
@@ -76,6 +77,8 @@ void setup() {
   pinMode (encoder0PinB, INPUT);
   attachInterrupt(digitalPinToInterrupt(encoder0PinA), indexRise, RISING);
   myservo.write(110);
+  Wire.begin();
+  sensors.init();
 }
 
 
@@ -143,7 +146,8 @@ void loop() {
   
   voltageZ = readBatteryMillivolts()/1000;
   //Serial.println(readBatteryMillivolts());
-  Serial.println(voltageZ);
+  /* Need to add this to the sent vector later */
+  //Serial.println(voltageZ); 
 
   //Serial.println("Desired Steering after serial:");
   //Serial.println(desiredSteering);
@@ -164,16 +168,16 @@ void loop() {
 // Data Collection and Export ------------------------------------------------------------------------------------
   sensors.read(); //read accel, mag, & gyro data; velo data already found 
 
-  Serial.write(actualVelocity);
-  Serial.write(sensors.a.x);
-  Serial.write(sensors.a.y);
-  Serial.write(sensors.a.z);
-  Serial.write(sensors.m.x);
-  Serial.write(sensors.m.y);
-  Serial.write(sensors.m.z);
-  Serial.write(sensors.g.x);
-  Serial.write(sensors.g.y);
-  Serial.write(sensors.g.z);
+  Serial.println(actualVelocity);     //size = 4
+  Serial.println(sensors.a.x);        //size = 2
+  Serial.println(sensors.a.y);        //size = 2
+  Serial.println(sensors.a.z);        //size = 2
+  Serial.println(sensors.m.x);        //size = 2
+  Serial.println(sensors.m.y);        //size = 2
+  Serial.println(sensors.m.z);        //size = 2
+  Serial.println(sensors.g.x);        //size = 2
+  Serial.println(sensors.g.y);        //size = 2
+  Serial.println(sensors.g.z);        //size = 2
 
 
   // ****************** PID CONTROL ********************** //
