@@ -45,8 +45,8 @@ waypointY = waypointData[:,2]
 ''' The important X is X = [ x, y, v^H, v^L, theta, theta_dot ] and we are not paying attention to the measurements of x & y '''
 
 # Calculate the x and y velocities from VICON
-viconVx = np.zeros_like(viconT)
-viconVy = np.zeros_like(viconT)
+viconVx = np.zeros_like(viconT[:-1])
+viconVy = np.zeros_like(viconT[:-1])
 
 viconDeltaX = viconX[1:] - viconX[:-1]
 viconDeltaY = viconY[1:] - viconY[:-1]
@@ -63,7 +63,19 @@ plt.plot(viconT, viconSpeed, label = 'Recorded Speed')
 plt.plot(viconT[:-1], np.sqrt(viconVx**2 + viconVy**2), label = 'Calculated Speed')
 plt.xlabel('Time'); plt.ylabel('Velocity/Speed'); plt.legend(); plt.figure()
 
+# initialize the sensor acceleration velocity vectors
+sensorVxs = np.zeros_like(sensorT[:-1])
+sensorVys = np.zeros_like(sensorT[:-1])
+sensorVzs = np.zeros_like(sensorT[:-1])
+
+# integrate the acceleration data cumulatively to find the velocity in each direction
 sensorVxs = sp.integrate.cumtrapz(sensorAxs)
 sensorVys = sp.integrate.cumtrapz(sensorAys)
 sensorVzs = sp.integrate.cumtrapz(sensorAzs)
+
+# plot statements for visual comparison
+plt.plot(viconvx and viconvy)
+plt.plot(sensorvx, sensorvy, and sensorvz)
+can also compare speeds
+
 

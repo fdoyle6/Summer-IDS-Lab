@@ -12,7 +12,6 @@
 Zumo32U4Motors motors;
 Zumo32U4IMU sensors;
 
-//
 double lastTime = millis();       // sets lastTime to the current time when the program starts
 String input;                     //intialize input variable
 
@@ -146,8 +145,7 @@ void loop() {
   
   voltageZ = readBatteryMillivolts()/1000;
   //Serial.println(readBatteryMillivolts());
-  /* Need to add this to the sent vector later */
-  //Serial.println(voltageZ); 
+  //Serial.println(voltageZ); //need to add this to the sent vector later
 
   //Serial.println("Desired Steering after serial:");
   //Serial.println(desiredSteering);
@@ -165,7 +163,7 @@ void loop() {
   }
 
 
-// Data Collection and Export ------------------------------------------------------------------------------------
+  // Data Collection and Export ------------------------------------------------------------------------------------
   sensors.read(); //read accel, mag, & gyro data; velo data already found 
 
   Serial.println(actualVelocity);     //size = 4
@@ -228,3 +226,4 @@ void loop() {
 
 
 }
+
