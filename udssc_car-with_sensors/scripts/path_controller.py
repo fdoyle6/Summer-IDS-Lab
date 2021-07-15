@@ -53,37 +53,37 @@ global lf
 
 class line_follower(object):
 
-	def __init__(self, car_length=0.111506):
+    def __init__(self, car_length=0.111506):
 
 		# Stanley Controller
-		self.sk = 4#0.85  #very sensitive
-		self.sk_soft = 0.001
-		self.sk_yaw = .1 #0.00125
-		self.mass = 0.37#kg
-		cy = 0.25 #N/rad
-		self.sk_ag = -self.mass/(2*cy)
+        self.sk = 4#0.85  #very sensitive
+        self.sk_soft = 0.001
+        self.sk_yaw = .1 #0.00125
+        self.mass = 0.37#kg
+        cy = 0.25 #N/rad
+        self.sk_ag = -self.mass/(2*cy)
 		
 		# ROS Node Initialization
-		hostname = platform.node()
-		idnum = platform.node().split('_')[1]
-		node_name = hostname + "_path_controller"
-		rospy.init_node(node_name, anonymous=False, log_level=rospy.DEBUG)
-		rospy.on_shutdown(self.shutdown)
-		self.rate = rospy.Rate(50)
+        hostname = platform.node()
+        idnum = platform.node().split('_')[1]
+        node_name = hostname + "_path_controller"
+        rospy.init_node(node_name, anonymous=False, log_level=rospy.DEBUG)
+        rospy.on_shutdown(self.shutdown)
+        self.rate = rospy.Rate(50)
 
 		# Data string from mainframe
-		self.dataString = ""
-		self.dataString_old = ""
+        self.dataString = ""
+        self.dataString_old = ""
 
 		# Fetch parameters
 	#	self.calib = rospy.get_param("/car_config/muskrat_" + idnum + "/steering_bias", 0)
-		self.calib = 0
+        self.calib = 0
 		#TEMP
-		self.r = 0
-		self.init = False
+        self.r = 0
+        self.init = False
 
 
-		wait_loop = rospy.Rate(30)
+        wait_loop = rospy.Rate(30)
 #		while self.r == None and not rospy.is_shutdown():
 #			try:
 #				self.r = rospy.get_param("/car_config/" + hostname + "/initial_distance")
@@ -93,40 +93,40 @@ class line_follower(object):
 #			wait_loop.sleep()
 
 		# General variables
-		self.hostname = hostname
-		self.cmd_type = ""
-		self.id = idnum
-		self.path_equations = ["0","0"]
-		self.next_path_equations = ["0","0"]
-		self.path_length = 0
-		self.segment_id = ""
-		self.segment_id_old = ""
-		self.path_length = 0
-		self.using_next_path = False
-		self.velocity_profile = "0"
-		self.velocity_desired = 0
-		self.t_seg_mainframe = None
-		self.prev_path_length = 0
-		self.time_old = 0
-		self.time = 0
-		self.position_old = np.zeros(3)
-		self.vel_old = 0
-		self.yaw_dot = 0
-		self.theta_old = 0
-		self.e_ahead_old = 0
-		self.e_i = 0
-		self.vicon_pos = [0,0,0]
-		self.euler = 0
-		self.vicon_speed = 0
-		self.vicon_yawrate = 0
-		self.pos = np.zeros((2,3))
-		self.car_length = car_length
-		self.t_timeout = 0
-		self.tseg = 0
-		self.yaw_traj_rate = 0
-		self.yaw_traj_new = 0
-		self.yaw_traj_old = 0
-		self.t0 = rospy.get_time()
+        self.hostname = hostname
+        self.cmd_type = ""
+        self.id = idnum
+        self.path_equations = ["0","0"]
+        self.next_path_equations = ["0","0"]
+        self.path_length = 0
+        self.segment_id = ""
+        self.segment_id_old = ""
+        self.path_length = 0
+        self.using_next_path = False
+        self.velocity_profile = "0"
+        self.velocity_desired = 0
+        self.t_seg_mainframe = None
+        self.prev_path_length = 0
+        self.time_old = 0
+        self.time = 0
+        self.position_old = np.zeros(3)
+        self.vel_old = 0
+        self.yaw_dot = 0
+        self.theta_old = 0
+        self.e_ahead_old = 0
+        self.e_i = 0
+        self.vicon_pos = [0,0,0]
+        self.euler = 0
+        self.vicon_speed = 0
+        self.vicon_yawrate = 0
+        self.pos = np.zeros((2,3))
+        self.car_length = car_length
+        self.t_timeout = 0
+        self.tseg = 0
+        self.yaw_traj_rate = 0
+        self.yaw_traj_new = 0
+        self.yaw_traj_old = 0
+        self.t0 = rospy.get_time()
 
 		# Running variables
 		# vicon and sensor data variables
@@ -177,15 +177,19 @@ class line_follower(object):
 		self.o_desiredX = 0.0
 		self.o_desiredY = 0.0
 		self.o_desiredT = 0.0
-
+        
 		# comparison vectors (time not included in state vector)
 		self.ViconState = [ self.vX, self.vY, self.vTheta, self.vThetaDot, self.vSpeed ]
-                self.sensorState = [ self.sVelo, self.sAccel0, self.sAccel1, self.sAccel2, self.sMag0, self.sMag1, self.sMag2, self.sGyro0, self.sGyro1, self.sGyro2 ]
-		self.wayPoint = [ self.desiredX, self.desiredY ]
+        self.sensorState = [ self.]
+        # self.sensorState = [ self.sVelo, self.sAccel0, self.sAccel1, self.sAccel2, self.sMag0,
+        #                     self.sMag1, self.sMag2, self.sGyro0, self.sGyro1, self.sGyro2 ]
+        # self.wayPoint = [ self.desiredX, self.desiredY ]
 
-                self.oldViconState =  [ self.o_vX, self.o_vY, self.o_vTheta, self.o_vThetaDot, self.o_vSpeed ]
-                self.oldSensorState = [ self.o_sVelo, self.o_sAccel0, self.o_sAccel1, self.o_sAccel2, self.o_sMag0, self.o_sMag1, self.o_sMag2, self.o_sGyro0, self.o_sGyro1, self.o_sGyro2 ]
-		self.oldWayPoint = [ self.o_desiredX, self.o_desiredY ]
+        # self.oldViconState =  [ self.o_vX, self.o_vY, self.o_vTheta, self.o_vThetaDot, self.o_vSpeed ]
+        # self.oldSensorState = [ self.o_sVelo, self.o_sAccel0, self.o_sAccel1, self.o_sAccel2,
+        #                       self.o_sMag0, self.o_sMag1, self.o_sMag2, self.o_sGyro0,
+         #                      self.o_sGyro1, self.o_sGyro2 ]
+		#self.oldWayPoint = [ self.o_desiredX, self.o_desiredY ]
 		
 		#state read
 		self.soc = -1
