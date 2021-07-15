@@ -38,9 +38,16 @@ global code_version
 code_version = "2.5"
 
 # Data file names - NOTE: Change N & X each run
-global file1_name, file2_name, f1, f2
-file1_name = 'VICON_Data_Run_N-Car_Number_X.txt'
-file2_name = 'Sensor_Data_Run_N-Car_Number_X.txt'
+global file1_name, file2_name, file3_name, f1, f2, recordData
+
+recordData = 1 	# if recording and exporting data = 1 (True) if not 0 (False)
+
+runNumber = '1' #Run number and car number for exported data files
+carNumber = '3'
+
+file1_name = 'VICON_Data-Run_' + runNumber + '-Car_Number_' + carNumber +'.txt'
+file2_name = 'Sensor_Data-Run_' + runNumber + '-Car_Number_' + carNumber +'.txt'
+file3_name = 'Waypoint_Data-Run_' + runNumber + '-Car_Number_' + carNumber +'.txt'
 
 global lf
 
@@ -141,7 +148,11 @@ class line_follower(object):
 		self.sGyro0 = 0.0 
 		self.sGyro1 = 0.0 
 		self.sGyro2 = 0.0 
-		self.sTime = rospy.get_time(); 
+		self.sTime = rospy.get_time()
+
+		self.desiredX = 0.0	# Waypoint Variables - *** MAY NEED MORE ***
+		self.desiredY = 0.0
+		self.desiredT = 0.0 
 
 		# for old data variables
 		self.o_vX = 0.0 
@@ -163,12 +174,18 @@ class line_follower(object):
 		self.o_sGyro2 = 0.0 
 		self.o_sTime = rospy.get_time()
 
-		# comparison vectors (time not included in state vector)
-		self.ViconState = [ vX, vY, vTheta, vThetaDot, vSpeed ]
-		self.sensorState = [ sVelo, sAccel0, sAccel1, sAccel2, sMag0, sMag1, sMag2, sGyro0, sGyro0, sGyro2 ]
+		self.o_desiredX = 0.0
+		self.o_desiredY = 0.0
+		self.o_desiredT = 0.0
 
-		self.oldViconState =  [ o_vX, o_vY, o_vTheta, o_vThetaDot, o_vSpeed ]
-		self.oldSensorState = [ o_sVelo, o_sAccel0, o_sAccel1, o_sAccel2, o_sMag0, o_sMag1, o_sMag2, o_sGyro0, o_sGyro1, o_sGyro2 ]
+		# comparison vectors (time not included in state vector)
+		self.ViconState = [ self.vX, self.vY, self.vTheta, self.vThetaDot, self.vSpeed ]
+                self.sensorState = [ self.sVelo, self.sAccel0, self.sAccel1, self.sAccel2, self.sMag0, self.sMag1, self.sMag2, self.sGyro0, self.sGyro1, self.sGyro2 ]
+		self.wayPoint = [ self.desiredX, self.desiredY ]
+
+                self.oldViconState =  [ self.o_vX, self.o_vY, self.o_vTheta, self.o_vThetaDot, self.o_vSpeed ]
+                self.oldSensorState = [ self.o_sVelo, self.o_sAccel0, self.o_sAccel1, self.o_sAccel2, self.o_sMag0, self.o_sMag1, self.o_sMag2, self.o_sGyro0, self.o_sGyro1, self.o_sGyro2 ]
+		self.oldWayPoint = [ self.o_desiredX, self.o_desiredY ]
 		
 		#state read
 		self.soc = -1
@@ -255,12 +272,16 @@ class line_follower(object):
 
 
 		# Create files
-		global f1 = open(file1_name, 'w')         # file for VICON data
-		global f2 = open(file2_name, 'w')         # file for sensor data
+		global f1, f2;
+		open(file1_name, "x"); open(file2_name, "x")
+		f1 = open(file1_name, "w")         # file for VICON data
+		f2 = open(file2_name, "w")         # file for sensor data
+		f3 = open(file3_name, "w")	   # file for idealized trajectories
 
 		# Add headers to data files
 		saveData(f1, 'Time', ['X', 'Y', 'Heading Angle', 'Angular Velocity', 'Speed'])
 		saveData(f2, 'Time', ['Heading Velocity', 'Acceleration 1', 'Acceleration 2', 'Acceleration 3', 'Compass 1', 'Compass 2', 'Compass 3', 'Gyro 1', 'Gyro 2', 'Gyro 3'])
+		saveData(f3, 'Desired Time', ['X', 'Y']) 	# may need to add more components depending on what is passed in
 
 		# 2 components of acceleration, 2 compass components, and 2 gyro components are useless 
 		# for right now, but I'm keeping all of them so I know how the sensors work completely.
@@ -533,30 +554,42 @@ class line_follower(object):
 		self.vSpeed = self.velocity_current 
 		self.vTime = rospy.get_time()
 
-		# I may need to export the data from the arduino as a string instead of an array of doubles
-		self.sVelo = self.ser.read(8)
-		self.sAccel0 = self.ser.read(8)
-		self.sAccel1 = self.ser.read(8)
-		self.sAccel2 = self.ser.read(8)
-		self.sMag0 = self.ser.read(8) 
-		self.sMag1 = self.ser.read(8)
-		self.sMag2 = self.ser.read(8)
-		self.sGyro0 = self.ser.read(8)
-		self.sGyro1 = self.ser.read(8)
-		self.sGyro2 = self.ser.read(8)
+		# Exported data from Arduino (check notes for the thing you need to add)
+		self.sVelo = self.ser.readln()
+		self.sAccel0 = self.ser.readln()
+		self.sAccel1 = self.ser.readln()
+		self.sAccel2 = self.ser.readln()
+		self.sMag0 = self.ser.readln() 
+		self.sMag1 = self.ser.readln()
+		self.sMag2 = self.ser.readln()
+		self.sGyro0 = self.ser.readln()
+		self.sGyro1 = self.ser.readln()
+		self.sGyro2 = self.ser.readln()
 		self.sTime = rospy.get_time()
+
+		# *** NEED TO READ AND RECORD THE WAYPOINT DATA IN HERE ***
+        # self.desiredX = 
+		# self.desiredY =
+        # self.wTime =
 
 		self.ViconState = [ self.vX, self.vY, self.vTheta, self.vThetaDot, self.vSpeed ]
 		self.sensorState = [ self.sVelo, self.sAccel0, self.sAccel1, self.sAccel2, self.sMag0, 
 		self.sMag1, self.sMag2, self.sGyro0, self.sGyro1, self.sGyro2 ]
-        
-		if not (np.allclose(ViconState, oldViconState)):
-        		saveData(f1, vTime, ViconState)
-        		oldViconState = ViconState; o_vTime = vTime
+		self.wayPoint = [ self.desiredX, self.desiredY]
+		
+		if recordingData:        
+			if not (np.allclose(self.ViconState, self.oldViconState)):
+                saveData(f1, self.vTime, self.ViconState)
+                self.oldViconState = self.ViconState; self.o_vTime = self.vTime
 
-		if not (np.allclose(sensorState, oldSensorState)):
-        		saveData(f2, sTime, sensorState)
-        		oldSensorState = sensorState; o_sTime = sTime
+            if not (np.allclose(self.sensorState, self.oldSensorState)):
+                saveData(f2, self.sTime, self.sensorState)
+                self.oldSensorState = self.sensorState; self.o_sTime = self.sTime
+
+			if not (np.allclose(self.wayPoint, self.oldWayPoint)):
+				saveData(f3, self.wTime, self.wayPoint)
+				self.oldWayPoint = self.wayPoint; self.o_wTime = self.wTime
+
 
 
 		self.desiredUpdate()
@@ -909,9 +942,10 @@ def StateMessage():
 def saveData(file_obj, time, stateVec):
         saveString = str(time)
         for ele in stateVec:
-                saveString.append('\t' + str(ele))         #use tabs so I can use np.genfromtxt() to analyze 
-        saveString.append('\n')
+                saveString += '\t' + str(ele)        #use tabs so I can use np.genfromtxt() to analyze 
+        saveString += '\n'
         file_obj.write(saveString); saveString = '\0'         # just for scoping stuff
+/
 
 if __name__ == '__main__':
 
