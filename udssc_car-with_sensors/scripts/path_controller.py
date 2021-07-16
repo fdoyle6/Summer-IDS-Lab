@@ -178,7 +178,7 @@ class line_follower(object):
         self.o_desiredY = 0.0
         self.o_desiredT = 0.0
        
-	self.batteryVoltage = 0.0	
+        f.batteryVoltage = 0.0	
 	
 	# comparison vectors (time not included in state vector)
         self.ViconState = np.array([ self.vX, self.vY, self.vTheta, self.vThetaDot, self.vSpeed ])
@@ -287,8 +287,11 @@ class line_follower(object):
 
     		# Add headers to data files
             saveData(file1, 'Time', ['X', 'Y', 'Heading Angle', 'Angular Velocity', 'Speed'])
-            saveData(file2, 'Time', ['Heading Velocity', 'Acceleration 1', 'Acceleration 2', 'Acceleration 3', 'Compass 1', 'Compass 2', 'Compass 3', 'Gyro 1', 'Gyro 2', 'Gyro 3'])
-            saveData(file3, 'Desired Time', ['X', 'Y']) 	# may need to add more components depending on what is passed in
+            saveData(file2, 'Time', ['Heading Velocity', 'Acceleration 1', 'Acceleration 2', 
+                                     'Acceleration 3', 'Compass 1', 'Compass 2', 'Compass 3', 
+                                     'Gyro 1', 'Gyro 2', 'Gyro 3'])
+            saveData(file3, 'Time', ['Desired X', 'Desired Y', 'Desired V_head', 
+                                             'Desired V_lat', 'Desired Theta', 'Desired Theta_dot'])
 
 		# 2 components of acceleration, 2 compass components, and 2 gyro components are useless 
 		# for right now, but I'm keeping all of them so I know how the sensors work completely.
@@ -553,68 +556,12 @@ class line_follower(object):
         self.yaw_dot = self.vicon_yawrate
 #		self.vicon_mutex.release()
 	
-	self.desiredUpdate()
+        self.desiredUpdate()
         pos_d, dR_d = self.evalPath(self.r)
         self.yaw_traj_new = atan2(dR_d[1], dR_d[0]);
         self.position_desired = pos_d
 
-        # Poll the Arduino to output the sensor data
-        self.ser.write('1')
-
-	# probably don't need new variables?
-        # give the Arduino a tiny delay to send all of the data
-        self.vX = self.pos[0][0]
-        self.vY = self.pos[0][1]
-        self.vTheta = self.pos[1][2] 
-        self.vThetaDot = self.yaw_dot
-        self.vSpeed = self.velocity_current 
-        self.vTime = rospy.get_time()
-        
-        # Recieve the data from the Arduino
-        self.sensorString = self.ser.readline()
-	self.sensorData = self.sensorString.split(',')
-	self.sVelo = float(self.sensorData[0]); self.sAccel0 = float(self.sensorData[1])
-	self.sAccel1 = float(self.sensorData[2]); self.sAccel2 = float(self.sensorData[3])
-	self.sMag0 = float(self.sensorData[4]); self.sMag1 = float(self.sensorData[5])
-	self.sMag2 = float(self.sensorData[6]); self.Gyro0 = float(self.sensorData[7])
-	self.sGyro1 = float(self.sensorData[8]); self.sGyro2 = float(self.sensorData[9])
-	self.batteryVoltage = float(self.sensorData[10]); self.sTime = rospy.get_time()
-
-	# *** NEED TO READ AND RECORD THE WAYPOINT DATA IN HERE ***
-        self.desiredX = self.position_desired[0]; self.desiredY = self.position_desired[1]
-	self.desiredVhead = self.velocity_desired; self.desiredVlat = 0.0; 
-        self.wTime =
-        
-        # Update state vector variables to see if needed to add to *.txt file
-        # self.ViconState = [ self.vX, self.vY, self.vTheta, self.vThetaDot, self.vSpeed ]
-        self.ViconState[0] = self.vX; self.ViconState[1] = self.vY; self.ViconState[2] = self.vTheta
-        self.ViconState[3] = self.vThetaDot; self.ViconState[4] = self.vSpeed
-        
-        # self.sensorState = [ self.sVelo, self.sAccel0, self.sAccel1, self.sAccel2, self.sMag0, ...
-        # self.sMag1, self.sMag2, self.sGyro0, self.sGyro1, self.sGyro2 ]
-        self.sensorState[0] = self.sVelo; self.sensorState[1] = self.sAccel0; self.sensorState[2] = self.sAccel1
-        self.sensorState[3] = self.sAccel2; self.sensorState[4] = self.sMag0; self.sensorState[5] = self.sMag1
-        self.sensorState[6] = self.sMag2; self.sensorState[7] = self.sGyro0; self.sensorState[8] = self.sGyro1
-        self.sensorState[9] = self.sGyro2
-        
-        # self.wayPoint = [ self.desiredX, self.desiredY, self.de]
-        self.wayPoint[0] = self.desiredX; self.wayPoint[1] = self.desiredY; self.wayPoint[2] = 
-		
-        if recordingData:        
-            if not (np.allclose(self.ViconState, self.oldViconState)):
-                saveData(file1, self.vTime, self.ViconState)
-                self.oldViconState = self.ViconState; self.o_vTime = self.vTime
-
-            if not (np.allclose(self.sensorState, self.oldSensorState)):
-                saveData(file2, self.sTime, self.sensorState)
-                self.oldSensorState = self.sensorState; self.o_sTime = self.sTime
-
-            if not (np.allclose(self.wayPoint, self.oldWayPoint)):
-                saveData(file3, self.wTime, self.wayPoint)
-                self.oldWayPoint = self.wayPoint; self.o_wTime = self.wTime
-
-
-	# get lateral and orientation error
+    	# get lateral and orientation error
         y_e, theta_e = self.calcError()
 		
 		#calculate desired yaw rate
@@ -670,6 +617,67 @@ class line_follower(object):
             self.pos_err_i = 0
 
         self.ser.write(str(motor_comm[0]) + ',' + str(motor_comm[1]) + ';')
+        
+        # Save Data to text files:
+        # Poll the Arduino to check & output the sensor data
+        self.ser.write('1')
+
+    	# probably don't need new variables?
+        # give the Arduino a tiny delay to send all of the data
+        self.vX = self.pos[0][0]
+        self.vY = self.pos[0][1]
+        self.vTheta = self.pos[1][2] 
+        self.vThetaDot = self.yaw_dot
+        self.vSpeed = self.velocity_current 
+        self.vTime = rospy.get_time()
+        
+        # Recieve the data from the Arduino
+        self.sensorString = self.ser.readline()
+        self.sensorData = self.sensorString.split(',')
+        self.sVelo = float(self.sensorData[0]); self.sAccel0 = float(self.sensorData[1])
+        self.sAccel1 = float(self.sensorData[2]); self.sAccel2 = float(self.sensorData[3])
+        self.sMag0 = float(self.sensorData[4]); self.sMag1 = float(self.sensorData[5])
+        self.sMag2 = float(self.sensorData[6]); self.Gyro0 = float(self.sensorData[7])
+        self.sGyro1 = float(self.sensorData[8]); self.sGyro2 = float(self.sensorData[9])
+        self.batteryVoltage = float(self.sensorData[10]); self.sTime = rospy.get_time()
+
+    	# *** NEED TO READ AND RECORD THE WAYPOINT DATA IN HERE ***
+        self.desiredX = self.position_desired[0]; self.desiredY = self.position_desired[1]
+        self.desiredVhead = self.velocity_desired; self.desiredVlat = 0.0; 
+        self.desiredTheta = yaw_next; self.desiredTheta_dot = yaw_traj_rate
+        self.wTime = rospy.get_time()
+        
+        # Update state vector variables to see if needed to add to *.txt file
+        # self.ViconState = [ self.vX, self.vY, self.vTheta, self.vThetaDot, self.vSpeed ]
+        self.ViconState[0] = self.vX; self.ViconState[1] = self.vY; self.ViconState[2] = self.vTheta
+        self.ViconState[3] = self.vThetaDot; self.ViconState[4] = self.vSpeed
+        
+        # self.sensorState = [ self.sVelo, self.sAccel0, self.sAccel1, self.sAccel2, self.sMag0, ...
+        # self.sMag1, self.sMag2, self.sGyro0, self.sGyro1, self.sGyro2 ]
+        self.sensorState[0] = self.sVelo; self.sensorState[1] = self.sAccel0; self.sensorState[2] = self.sAccel1
+        self.sensorState[3] = self.sAccel2; self.sensorState[4] = self.sMag0; self.sensorState[5] = self.sMag1
+        self.sensorState[6] = self.sMag2; self.sensorState[7] = self.sGyro0; self.sensorState[8] = self.sGyro1
+        self.sensorState[9] = self.sGyro2
+        
+        # self.wayPoint = [ self.desiredX, self.desiredY, self.desiredVhead, self.desiredVlat, ...
+        # self.desiredTheta, self.desiredTheta_dot ]
+        self.wayPoint[0] = self.desiredX; self.wayPoint[1] = self.desiredY; self.wayPoint[2] = self.desiredVhead
+        self.wayPoint[3] = self.desiredVlat; self.waypoint[4] = self.desiredTheta
+        self.waypoint[5] = self.desiredTheta_dot
+		
+        if recordingData:        
+            if not (np.allclose(self.ViconState, self.oldViconState)):
+                saveData(file1, self.vTime, self.ViconState)
+                self.oldViconState = self.ViconState; self.o_vTime = self.vTime
+
+            if not (np.allclose(self.sensorState, self.oldSensorState)):
+                saveData(file2, self.sTime, self.sensorState)
+                self.oldSensorState = self.sensorState; self.o_sTime = self.sTime
+
+            if not (np.allclose(self.wayPoint, self.oldWayPoint)):
+                saveData(file3, self.wTime, self.wayPoint)
+                self.oldWayPoint = self.wayPoint; self.o_wTime = self.wTime
+
 
 		# Store old variables
         self.time_old = self.time
