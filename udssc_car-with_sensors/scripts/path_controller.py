@@ -63,7 +63,7 @@ class line_follower(object):
         cy = 0.25 #N/rad
         self.sk_ag = -self.mass/(2*cy)
 		
-		# ROS Node Initialization
+		# ROS Node Initialization	
         hostname = platform.node()
         idnum = platform.node().split('_')[1]
         node_name = hostname + "_path_controller"
