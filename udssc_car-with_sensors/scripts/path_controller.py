@@ -184,8 +184,8 @@ class line_follower(object):
                              self.sMag1, self.sMag2, self.sGyro0, self.sGyro1, self.sGyro2 ])
         self.wayPoint = np.array([ self.desiredX, self.desiredY ])
         
-        self.sensorData = ''
-        self.sensorDataSplit = ['', '']
+        self.sensorString = ''
+        self.sensorData = ['', '']
 
         self.oldViconState =  np.array([ self.o_vX, self.o_vY, self.o_vTheta, self.o_vThetaDot, self.o_vSpeed ])
         self.oldSensorState = np.array([ self.o_sVelo, self.o_sAccel0, self.o_sAccel1, self.o_sAccel2, self.o_sMag0, 
@@ -564,7 +564,7 @@ class line_follower(object):
         self.vTime = rospy.get_time()
         
         # Recieve the data from the Arduino
-        self.sensorData
+        self.sensorString = self.ser.readline()
         
         # Exported data from Arduino (check notes for the thing you need to add)
         '''self.sVelo = self.ser.readln()
