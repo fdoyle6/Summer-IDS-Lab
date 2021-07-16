@@ -38,9 +38,9 @@ global code_version
 code_version = "2.5"
 
 # Data file names - NOTE: Change N & X each run
-global file1_name, file2_name, file3_name, file1, file2, file3, recordData
+global file1_name, file2_name, file3_name, file1, file2, file3, recordingData
 
-recordData = 1 	# if recording and exporting data = 1 (True) if not 0 (False)
+recordingData = 1 	# if recording and exporting data = 1 (True) if not 0 (False)
 
 runNumber = '1' #Run number and car number for exported data files
 carNumber = '3'
@@ -179,15 +179,18 @@ class line_follower(object):
         self.o_desiredT = 0.0
        
 		# comparison vectors (time not included in state vector)
-        self.ViconState = [ self.vX, self.vY, self.vTheta, self.vThetaDot, self.vSpeed ]
-        self.sensorState = [ self.sVelo, self.sAccel0, self.sAccel1, self.sAccel2, self.sMag0,
-                             self.sMag1, self.sMag2, self.sGyro0, self.sGyro1, self.sGyro2 ]
-        self.wayPoint = [ self.desiredX, self.desiredY ]
+        self.ViconState = np.array([ self.vX, self.vY, self.vTheta, self.vThetaDot, self.vSpeed ])
+        self.sensorState = np.array([ self.sVelo, self.sAccel0, self.sAccel1, self.sAccel2, self.sMag0,
+                             self.sMag1, self.sMag2, self.sGyro0, self.sGyro1, self.sGyro2 ])
+        self.wayPoint = np.array([ self.desiredX, self.desiredY ])
+        
+        self.sensorData = ''
+        self.sensorDataSplit = ['', '']
 
-        self.oldViconState =  [ self.o_vX, self.o_vY, self.o_vTheta, self.o_vThetaDot, self.o_vSpeed ]
-        self.oldSensorState = [ self.o_sVelo, self.o_sAccel0, self.o_sAccel1, self.o_sAccel2, self.o_sMag0, 
-                               self.o_sMag1, self.o_sMag2, self.o_sGyro0, self.o_sGyro1, self.o_sGyro2 ]
-        self.oldWayPoint = [ self.o_desiredX, self.o_desiredY ]
+        self.oldViconState =  np.array([ self.o_vX, self.o_vY, self.o_vTheta, self.o_vThetaDot, self.o_vSpeed ])
+        self.oldSensorState = np.array([ self.o_sVelo, self.o_sAccel0, self.o_sAccel1, self.o_sAccel2, self.o_sMag0, 
+                               self.o_sMag1, self.o_sMag2, self.o_sGyro0, self.o_sGyro1, self.o_sGyro2 ])
+        self.oldWayPoint = np.array([ self.o_desiredX, self.o_desiredY ])
 		
 		#state read
         self.soc = -1
@@ -273,16 +276,17 @@ class line_follower(object):
         self.RGB = "010"
 
 
-		# Create files
-        global file1, file2, file3;
-        file1 = open(file1_name, "w")         # file for VICON data
-        file2 = open(file2_name, "w")         # file for sensor data
-        file3 = open(file3_name, "w")	   # file for idealized trajectories
+		# Create files if collecting data
+        if recordingData:
+            global file1, file2, file3;
+            file1 = open(file1_name, "w")         # file for VICON data
+            file2 = open(file2_name, "w")         # file for sensor data
+            file3 = open(file3_name, "w")	   # file for idealized trajectories
 
-		# Add headers to data files
-        saveData(file1, 'Time', ['X', 'Y', 'Heading Angle', 'Angular Velocity', 'Speed'])
-        saveData(file2, 'Time', ['Heading Velocity', 'Acceleration 1', 'Acceleration 2', 'Acceleration 3', 'Compass 1', 'Compass 2', 'Compass 3', 'Gyro 1', 'Gyro 2', 'Gyro 3'])
-        saveData(file3, 'Desired Time', ['X', 'Y']) 	# may need to add more components depending on what is passed in
+    		# Add headers to data files
+            saveData(file1, 'Time', ['X', 'Y', 'Heading Angle', 'Angular Velocity', 'Speed'])
+            saveData(file2, 'Time', ['Heading Velocity', 'Acceleration 1', 'Acceleration 2', 'Acceleration 3', 'Compass 1', 'Compass 2', 'Compass 3', 'Gyro 1', 'Gyro 2', 'Gyro 3'])
+            saveData(file3, 'Desired Time', ['X', 'Y']) 	# may need to add more components depending on what is passed in
 
 		# 2 components of acceleration, 2 compass components, and 2 gyro components are useless 
 		# for right now, but I'm keeping all of them so I know how the sensors work completely.
@@ -547,16 +551,23 @@ class line_follower(object):
         self.yaw_dot = self.vicon_yawrate
 #		self.vicon_mutex.release()
 
+        # Poll the Arduino to output the sensor data
+        self.ser.write('1')
+
 		# probably don't need new variables?
+        # give the Arduino a tiny delay to send all of the data
         self.vX = self.pos[0][0]
         self.vY = self.pos[0][1]
         self.vTheta = self.pos[1][2] 
         self.vThetaDot = self.yaw_dot
         self.vSpeed = self.velocity_current 
         self.vTime = rospy.get_time()
-
-		# Exported data from Arduino (check notes for the thing you need to add)
-        self.sVelo = self.ser.readln()
+        
+        # Recieve the data from the Arduino
+        self.sensorData
+        
+        # Exported data from Arduino (check notes for the thing you need to add)
+        '''self.sVelo = self.ser.readln()
         self.sAccel0 = self.ser.readln()
         self.sAccel1 = self.ser.readln()
         self.sAccel2 = self.ser.readln()
@@ -566,17 +577,27 @@ class line_follower(object):
         self.sGyro0 = self.ser.readln()
         self.sGyro1 = self.ser.readln()
         self.sGyro2 = self.ser.readln()
-        self.sTime = rospy.get_time()
+        self.sTime = rospy.get_time()'''
 
 		# *** NEED TO READ AND RECORD THE WAYPOINT DATA IN HERE ***
         # self.desiredX = 
 		# self.desiredY =
         # self.wTime =
-
-        self.ViconState = [ self.vX, self.vY, self.vTheta, self.vThetaDot, self.vSpeed ]
-        self.sensorState = [ self.sVelo, self.sAccel0, self.sAccel1, self.sAccel2, self.sMag0, 
-                            self.sMag1, self.sMag2, self.sGyro0, self.sGyro1, self.sGyro2 ]
-        self.wayPoint = [ self.desiredX, self.desiredY]
+        
+        # Update state vector variables to see if needed to add to *.txt file
+        # self.ViconState = [ self.vX, self.vY, self.vTheta, self.vThetaDot, self.vSpeed ]
+        self.ViconState[0] = self.vX; self.ViconState[1] = self.vY; self.ViconState[2] = self.vTheta
+        self.ViconState[3] = self.vThetaDot; self.ViconState[4] = self.vSpeed
+        
+        # self.sensorState = [ self.sVelo, self.sAccel0, self.sAccel1, self.sAccel2, self.sMag0, ...
+        # self.sMag1, self.sMag2, self.sGyro0, self.sGyro1, self.sGyro2 ]
+        self.sensorState[0] = self.sVelo; self.sensorState[1] = self.sAccel0; self.sensorState[2] = self.sAccel1
+        self.sensorState[3] = self.sAccel2; self.sensorState[4] = self.sMag0; self.sensorState[5] = self.sMag1
+        self.sensorState[6] = self.sMag2; self.sensorState[7] = self.sGyro0; self.sensorState[8] = self.sGyro1
+        self.sensorState[9] = self.sGyro2
+        
+        # self.wayPoint = [ self.desiredX, self.desiredY]
+        self.wayPoint[0] = self.desiredX; self.wayPoint[1] = self.desiredY
 		
         if recordingData:        
             if not (np.allclose(self.ViconState, self.oldViconState)):
