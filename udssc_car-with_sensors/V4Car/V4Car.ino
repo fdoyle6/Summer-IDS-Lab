@@ -164,19 +164,23 @@ void loop() {
 
 
   // Data Collection and Export ------------------------------------------------------------------------------------
-  sensors.read(); //read accel, mag, & gyro data; velo data already found 
+  // *** NEED TO FIND WAY TO ACTIVATE THIS WITHOUT INTERFERING WITH OTHER METHODS ***
+  // if (condition) {
+    sensors.read(); //read accel, mag, & gyro data; velo data already found 
 
-  Serial.println(actualVelocity);     //size = 4
-  Serial.println(sensors.a.x);        //size = 2
-  Serial.println(sensors.a.y);        //size = 2
-  Serial.println(sensors.a.z);        //size = 2
-  Serial.println(sensors.m.x);        //size = 2
-  Serial.println(sensors.m.y);        //size = 2
-  Serial.println(sensors.m.z);        //size = 2
-  Serial.println(sensors.g.x);        //size = 2
-  Serial.println(sensors.g.y);        //size = 2
-  Serial.println(sensors.g.z);        //size = 2
-
+    Serial.print(actualVelocity, 6);
+    
+    Serial.println(actualVelocity);     //size = 4
+    Serial.println(sensors.a.x);        //size = 2
+    Serial.println(sensors.a.y);        //size = 2
+    Serial.println(sensors.a.z);        //size = 2
+    Serial.println(sensors.m.x);        //size = 2
+    Serial.println(sensors.m.y);        //size = 2
+    Serial.println(sensors.m.z);        //size = 2
+    Serial.println(sensors.g.x);        //size = 2
+    Serial.println(sensors.g.y);        //size = 2
+    Serial.println(sensors.g.z);        //size = 2
+  //}
 
   // ****************** PID CONTROL ********************** //
   error = abs(inputVelocity) - abs(actualVelocity)  ;             //actual velocity - desrired velocity, converted back to motor power terms
