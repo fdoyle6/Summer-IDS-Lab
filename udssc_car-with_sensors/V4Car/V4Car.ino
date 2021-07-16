@@ -168,7 +168,7 @@ void loop() {
     Serial.print(sensors.g.x); Serial.print(',');       //size = 2
     Serial.print(sensors.g.y); Serial.print(',');       //size = 2
     Serial.print(sensors.g.z); Serial.print(',');       //size = 2
-    Serial.print(voltageZ); Serial.print(','); Serial.print(';'); //just for the split command and having a definite finish
+    Serial.print(voltageZ); Serial.print(',;\n'); //just for the split command and having a definite finish
   }
 
 
