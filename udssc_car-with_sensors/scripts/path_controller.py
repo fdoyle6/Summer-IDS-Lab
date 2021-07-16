@@ -178,7 +178,9 @@ class line_follower(object):
         self.o_desiredY = 0.0
         self.o_desiredT = 0.0
        
-		# comparison vectors (time not included in state vector)
+	self.batteryVoltage = 0.0	
+	
+	# comparison vectors (time not included in state vector)
         self.ViconState = np.array([ self.vX, self.vY, self.vTheta, self.vThetaDot, self.vSpeed ])
         self.sensorState = np.array([ self.sVelo, self.sAccel0, self.sAccel1, self.sAccel2, self.sMag0,
                              self.sMag1, self.sMag2, self.sGyro0, self.sGyro1, self.sGyro2 ])
@@ -550,11 +552,16 @@ class line_follower(object):
         self.velocity_current = self.vicon_speed
         self.yaw_dot = self.vicon_yawrate
 #		self.vicon_mutex.release()
+	
+	self.desiredUpdate()
+        pos_d, dR_d = self.evalPath(self.r)
+        self.yaw_traj_new = atan2(dR_d[1], dR_d[0]);
+        self.position_desired = pos_d
 
         # Poll the Arduino to output the sensor data
         self.ser.write('1')
 
-		# probably don't need new variables?
+	# probably don't need new variables?
         # give the Arduino a tiny delay to send all of the data
         self.vX = self.pos[0][0]
         self.vY = self.pos[0][1]
@@ -565,24 +572,18 @@ class line_follower(object):
         
         # Recieve the data from the Arduino
         self.sensorString = self.ser.readline()
-        
-        # Exported data from Arduino (check notes for the thing you need to add)
-        '''self.sVelo = self.ser.readln()
-        self.sAccel0 = self.ser.readln()
-        self.sAccel1 = self.ser.readln()
-        self.sAccel2 = self.ser.readln()
-        self.sMag0 = self.ser.readln() 
-        self.sMag1 = self.ser.readln()
-        self.sMag2 = self.ser.readln()
-        self.sGyro0 = self.ser.readln()
-        self.sGyro1 = self.ser.readln()
-        self.sGyro2 = self.ser.readln()
-        self.sTime = rospy.get_time()'''
+	self.sensorData = self.sensorString.split(',')
+	self.sVelo = float(self.sensorData[0]); self.sAccel0 = float(self.sensorData[1])
+	self.sAccel1 = float(self.sensorData[2]); self.sAccel2 = float(self.sensorData[3])
+	self.sMag0 = float(self.sensorData[4]); self.sMag1 = float(self.sensorData[5])
+	self.sMag2 = float(self.sensorData[6]); self.Gyro0 = float(self.sensorData[7])
+	self.sGyro1 = float(self.sensorData[8]); self.sGyro2 = float(self.sensorData[9])
+	self.batteryVoltage = float(self.sensorData[10]); self.sTime = rospy.get_time()
 
-		# *** NEED TO READ AND RECORD THE WAYPOINT DATA IN HERE ***
-        # self.desiredX = 
-		# self.desiredY =
-        # self.wTime =
+	# *** NEED TO READ AND RECORD THE WAYPOINT DATA IN HERE ***
+        self.desiredX = self.position_desired[0]; self.desiredY = self.position_desired[1]
+	self.desiredVhead = self.velocity_desired; self.desiredVlat = 0.0; 
+        self.wTime =
         
         # Update state vector variables to see if needed to add to *.txt file
         # self.ViconState = [ self.vX, self.vY, self.vTheta, self.vThetaDot, self.vSpeed ]
@@ -596,8 +597,8 @@ class line_follower(object):
         self.sensorState[6] = self.sMag2; self.sensorState[7] = self.sGyro0; self.sensorState[8] = self.sGyro1
         self.sensorState[9] = self.sGyro2
         
-        # self.wayPoint = [ self.desiredX, self.desiredY]
-        self.wayPoint[0] = self.desiredX; self.wayPoint[1] = self.desiredY
+        # self.wayPoint = [ self.desiredX, self.desiredY, self.de]
+        self.wayPoint[0] = self.desiredX; self.wayPoint[1] = self.desiredY; self.wayPoint[2] = 
 		
         if recordingData:        
             if not (np.allclose(self.ViconState, self.oldViconState)):
@@ -613,17 +614,7 @@ class line_follower(object):
                 self.oldWayPoint = self.wayPoint; self.o_wTime = self.wTime
 
 
-
-        self.desiredUpdate()
-
-        pos_d, dR_d = self.evalPath(self.r)
-
-        self.yaw_traj_new = atan2(dR_d[1], dR_d[0]);
-
-        self.position_desired = pos_d
-
-
-		#get lateral and orientation error
+	# get lateral and orientation error
         y_e, theta_e = self.calcError()
 		
 		#calculate desired yaw rate
