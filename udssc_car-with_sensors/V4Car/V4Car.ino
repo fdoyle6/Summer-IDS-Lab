@@ -97,7 +97,7 @@ void setup() {
 void loop() {
 
   // *************** INTERPRET COMMAND ******************** //
-  if(Serial.available() > 0) {
+  if(Serial.available() > 1) { //changed to 1 -> no input code needed for steering
     inputSteering = Serial.readStringUntil(','); //
     desiredSteeringRaw = inputSteering.toDouble();
     //desiredSteering = -inputSteering.toDouble() + (90);          //Can accept values from -4-4... change turnscalar to 4
@@ -124,16 +124,7 @@ void loop() {
     }else{
       direction = 0;
     }
-  } if ((millis() - lastTime) > cycleTime){
-    rotations = count / 225;                                      //1 rotation = 225 counts from encoder
-    // Serial.print("Counts: ");Serial.println(count);
-    rotationRate = (rotations / (millis() - lastTime)) * (ts );   //counts/ses
-    actualVelocity = rotationRate * wheelCir;                     //v = change in counts / (current time - timeSinceLast)*1000/ time between cycles
-    lastTime = millis();
-    count = 0;
-    rotations = 0;
-
-  }
+  } 
 
   // *********** BATTERY VOLTAGE READING ************* //
   // This part reads the battery voltage through the Zumo
@@ -150,7 +141,7 @@ void loop() {
   //Serial.println("Desired Steering after serial:");
   //Serial.println(desiredSteering);
 
-  // ***************** UPDATE desiredSteeringACTUAL VELOCITY ***************** //
+  // ***************** UPDATE ACTUAL VELOCITY ***************** //
   if ((millis() - lastTime) > cycleTime){
     rotations = count / 225;                                      //1 rotation = 225 counts from encoder
     // Serial.print("Counts: ");Serial.println(count);
@@ -164,23 +155,21 @@ void loop() {
 
 
   // Data Collection and Export ------------------------------------------------------------------------------------
-  // *** NEED TO FIND WAY TO ACTIVATE THIS WITHOUT INTERFERING WITH OTHER METHODS ***
-  // if (condition) {
+  if (Serial.available() == 1) {
     sensors.read(); //read accel, mag, & gyro data; velo data already found 
-
-    Serial.print(actualVelocity, 6);
     
-    Serial.println(actualVelocity);     //size = 4
-    Serial.println(sensors.a.x);        //size = 2
-    Serial.println(sensors.a.y);        //size = 2
-    Serial.println(sensors.a.z);        //size = 2
-    Serial.println(sensors.m.x);        //size = 2
-    Serial.println(sensors.m.y);        //size = 2
-    Serial.println(sensors.m.z);        //size = 2
-    Serial.println(sensors.g.x);        //size = 2
-    Serial.println(sensors.g.y);        //size = 2
-    Serial.println(sensors.g.z);        //size = 2
-  //}
+    Serial.print(actualVelocity, 6); Serial.print(','); // keep 6 decimal places size = 4
+    Serial.print(sensors.a.x); Serial.print(',');      //size = 2
+    Serial.print(sensors.a.y); Serial.print(',');       //size = 2
+    Serial.print(sensors.a.z); Serial.print(',');       //size = 2
+    Serial.print(sensors.m.x); Serial.print(',');       //size = 2
+    Serial.print(sensors.m.y); Serial.print(',');       //size = 2
+    Serial.print(sensors.m.z); Serial.print(',');       //size = 2
+    Serial.print(sensors.g.x); Serial.print(',');       //size = 2
+    Serial.print(sensors.g.y); Serial.print(',');       //size = 2
+    Serial.print(sensors.g.z); Serial.print(',');       //size = 2
+    Serial.print(voltageZ); Serial.print(';');
+  }
 
   // ****************** PID CONTROL ********************** //
   error = abs(inputVelocity) - abs(actualVelocity)  ;             //actual velocity - desrired velocity, converted back to motor power terms
