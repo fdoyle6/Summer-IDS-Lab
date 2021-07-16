@@ -152,6 +152,10 @@ class line_follower(object):
 
         self.desiredX = 0.0	# Waypoint Variables - *** MAY NEED MORE ***
         self.desiredY = 0.0
+	self.desiredVhead = 0.0
+	self.desiredVlat = 0.0
+	self.desiredTheta = 0.0
+	self.desiredTheta_dot = 0.0
         self.desiredT = 0.0 
 
 		# for old data variables
@@ -176,15 +180,19 @@ class line_follower(object):
 
         self.o_desiredX = 0.0
         self.o_desiredY = 0.0
+	self.o_desiredVhead = 0.0
+	self.o_desiredVlat = 0.0
+	self.o_desiredTheta = 0.0
+	self.o_desiredTheta_dot = 0.0
         self.o_desiredT = 0.0
        
-        f.batteryVoltage = 0.0	
+        self.batteryVoltage = 0.0	
 	
 	# comparison vectors (time not included in state vector)
         self.ViconState = np.array([ self.vX, self.vY, self.vTheta, self.vThetaDot, self.vSpeed ])
         self.sensorState = np.array([ self.sVelo, self.sAccel0, self.sAccel1, self.sAccel2, self.sMag0,
                              self.sMag1, self.sMag2, self.sGyro0, self.sGyro1, self.sGyro2 ])
-        self.wayPoint = np.array([ self.desiredX, self.desiredY ])
+        self.wayPoint = np.array([ self.desiredX, self.desiredY, self.desiredVhead, self.desiredVlat,self.desiredTheta, self.desiredTheta_dot ])
         
         self.sensorString = ''
         self.sensorData = ['', '']
@@ -192,7 +200,7 @@ class line_follower(object):
         self.oldViconState =  np.array([ self.o_vX, self.o_vY, self.o_vTheta, self.o_vThetaDot, self.o_vSpeed ])
         self.oldSensorState = np.array([ self.o_sVelo, self.o_sAccel0, self.o_sAccel1, self.o_sAccel2, self.o_sMag0, 
                                self.o_sMag1, self.o_sMag2, self.o_sGyro0, self.o_sGyro1, self.o_sGyro2 ])
-        self.oldWayPoint = np.array([ self.o_desiredX, self.o_desiredY ])
+       	self.wayPoint = np.array([ self.o_desiredX, self.o_desiredY, self.o_desiredVhead, self.o_desiredVlat,self.o_desiredTheta, self.o_desiredTheta_dot ])
 		
 		#state read
         self.soc = -1
@@ -219,7 +227,8 @@ class line_follower(object):
         self.ser.flushOutput()
         self.ser.flushInput()
         self.ser.write("0,0;")
-		# ROS Topics
+
+	# ROS Topics
         self.update_pose = rospy.Publisher(self.hostname + '/pose', PoseStamped, queue_size=5)
         self.update_target = rospy.Publisher(self.hostname+'/target', PoseStamped, queue_size=5)
         self.update_steering = rospy.Publisher(self.hostname+'/steering', PoseStamped, queue_size=5)
@@ -630,9 +639,12 @@ class line_follower(object):
         self.vThetaDot = self.yaw_dot
         self.vSpeed = self.velocity_current 
         self.vTime = rospy.get_time()
-        
+       	
+	print("About to recieve data from Arduino")
+	 
         # Recieve the data from the Arduino
-        self.sensorString = self.ser.readline()
+        self.sensorString = self.ser.readline() #ERROR IS IN THIS LINE/PROCESS
+	print("Recieved data from Arduino")
         self.sensorData = self.sensorString.split(',')
         self.sVelo = float(self.sensorData[0]); self.sAccel0 = float(self.sensorData[1])
         self.sAccel1 = float(self.sensorData[2]); self.sAccel2 = float(self.sensorData[3])
@@ -640,6 +652,8 @@ class line_follower(object):
         self.sMag2 = float(self.sensorData[6]); self.Gyro0 = float(self.sensorData[7])
         self.sGyro1 = float(self.sensorData[8]); self.sGyro2 = float(self.sensorData[9])
         self.batteryVoltage = float(self.sensorData[10]); self.sTime = rospy.get_time()
+	
+	print("passed arduino code block")
 
     	# *** NEED TO READ AND RECORD THE WAYPOINT DATA IN HERE ***
         self.desiredX = self.position_desired[0]; self.desiredY = self.position_desired[1]
