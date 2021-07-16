@@ -155,7 +155,7 @@ void loop() {
 
 
   // Data Collection and Export ------------------------------------------------------------------------------------
-  if (Serial.available() == 1) {
+  if (Serial.available() == 1) { //may need to change to 2
     sensors.read(); //read accel, mag, & gyro data; velo data already found 
     
     Serial.print(actualVelocity, 6); Serial.print(','); // keep 6 decimal places size = 4
@@ -168,8 +168,9 @@ void loop() {
     Serial.print(sensors.g.x); Serial.print(',');       //size = 2
     Serial.print(sensors.g.y); Serial.print(',');       //size = 2
     Serial.print(sensors.g.z); Serial.print(',');       //size = 2
-    Serial.print(voltageZ); Serial.print(';');
+    Serial.print(voltageZ); Serial.print(','); Serial.print(';'); //just for the split command and having a definite finish
   }
+
 
   // ****************** PID CONTROL ********************** //
   error = abs(inputVelocity) - abs(actualVelocity)  ;             //actual velocity - desrired velocity, converted back to motor power terms
