@@ -155,8 +155,10 @@ void loop() {
 
 
   // Data Collection and Export ------------------------------------------------------------------------------------
-  if (Serial.available() == 1) { //may need to change to 2
+  if (Serial.available() == 1) { //may need to change to 2 *** TEST USING IF (TRUE) ***
     sensors.read(); //read accel, mag, & gyro data; velo data already found 
+
+    //Serial.println(everything?);
     
     Serial.print(actualVelocity, 6); Serial.print(','); // keep 6 decimal places size = 4
     Serial.print(sensors.a.x); Serial.print(',');      //size = 2
