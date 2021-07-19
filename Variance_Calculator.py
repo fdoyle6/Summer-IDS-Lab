@@ -50,10 +50,14 @@ sensorGxs = sensorData[:,8]
 sensorGys = sensorData[:,9]
 sensorGzs = sensorData[:,10]
 
-# Waypoint Data
-waypointT = waypointData[:,0]
+# Waypoint (Desired) Data
+waypointT = waypointData[:,0] # NOTE: THIS IS JUST THE TIME THE POINT WAS EVALUATED
 waypointX = waypointData[:,1]
 waypointY = waypointData[:,2]
+waypointVhead = waypointData[:,3]
+waypointVlat = waypointData[:,4]
+waypointTheta = waypointData[:,5]
+waypointTheta_dot = waypointData[:,6]
 
 # Sensor data unit conversion factors (time doesn't get scaled)
 kVHead = 1.0
@@ -131,10 +135,10 @@ plt.legend(); plt.figure()
 # TODO - FIGURE OUT IF THE ACCELERATIONS OUTPUT INTRINSICALLY OR EXTRINSICALLY
 
 # Initialize variance variables
-varVHead = 0
-varVLat = 0
-varTheta = 0
-varTheta_dot = 0
+varVHead = 0.0
+varVLat = 0.0
+varTheta = 0.0
+varTheta_dot = 0.0
 
 # calculate variances
 
