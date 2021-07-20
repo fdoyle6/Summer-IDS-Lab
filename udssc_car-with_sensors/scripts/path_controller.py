@@ -289,6 +289,7 @@ class line_follower(object):
 
 		# Create files if collecting data
         global recordingData
+        print(recordingData)
         if recordingData:
             global file1, file2, file3;
             file1 = open(file1_name, "w")         # file for VICON data
@@ -981,6 +982,7 @@ def StateMessage():
 
 
 def saveData(file_obj, time, stateVec):
+        #global file1, file2, file3
         saveString = str(time)
         for ele in stateVec:
                 saveString += '\t' + str(ele)        #use tabs so I can use np.genfromtxt() to analyze 
