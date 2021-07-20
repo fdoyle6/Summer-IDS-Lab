@@ -678,8 +678,8 @@ class line_follower(object):
         # self.wayPoint = [ self.desiredX, self.desiredY, self.desiredVhead, self.desiredVlat, ...
         # self.desiredTheta, self.desiredTheta_dot ]
         self.wayPoint[0] = self.desiredX; self.wayPoint[1] = self.desiredY; self.wayPoint[2] = self.desiredVhead
-        self.wayPoint[3] = self.desiredVlat; self.waypoint[4] = self.desiredTheta
-        self.waypoint[5] = self.desiredTheta_dot
+        self.wayPoint[3] = self.desiredVlat; self.wayPoint[4] = self.desiredTheta
+        self.wayPoint[5] = self.desiredTheta_dot
 		
         if recordingData:        
             if not (np.allclose(self.ViconState, self.oldViconState)):
