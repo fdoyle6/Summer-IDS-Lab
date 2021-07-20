@@ -616,7 +616,7 @@ class line_follower(object):
 
         motor_comm = [float(steering_angle),float(velocity)]
 	
-        print(velocity, "\t*********************") # SECOND LOOP STOPS HERE
+        print(velocity, "\t*********************")
 
         if abs(velocity) < 0.01:
 #			print "TRYING TO STOP!!!!"
@@ -628,15 +628,12 @@ class line_follower(object):
 #			motor_comm = [steering_angle,0]
             self.pos_err_i = 0
 
-        print('Debug line 0')
         self.ser.write(str(motor_comm[0]) + ',' + str(motor_comm[1]) + ';')
         
         # Save Data to text files:
         # Poll the Arduino to check & output the sensor data
-        print('Debug line 1')
-        self.ser.write('1')
+        self.ser.write('1') # second loop fails here
         
-        print('Debug line 2')
     	# probably don't need new variables?
         # give the Arduino a tiny delay to send all of the data
         self.vX = self.pos[0][0]
