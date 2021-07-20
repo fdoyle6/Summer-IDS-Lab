@@ -505,6 +505,7 @@ class line_follower(object):
         if msg_type == "MAN":
             self.manual_speed = float(speeds_string[0])
             self.manual_steer = float(speeds_string[1])
+        
         self.cmd_type = msg_type
         self.time_stamp = time_stamp
         self.path_length = length
@@ -536,7 +537,7 @@ class line_follower(object):
 
 
         ''' Main update function '''
-#TODO USE CHRONY TO SYNC clock (Easy)
+        #TODO USE CHRONY TO SYNC clock (Easy)
         self.time = rospy.get_time()
         if (self.time_old == 0):
             self.time_old = rospy.get_time()
@@ -552,18 +553,19 @@ class line_follower(object):
             self.msgParser(mf_commands)
 
         if (self.cmd_type == "MAN"):
-	#		print "Manual Driving @ " + str(self.rate)  
+            #print "Manual Driving @ " + str(self.rate)  
             self.manualDrive()
             self.getSOC()
             self.rate.sleep()
             return
-#		self.vicon_mutex.acquire()
+        
+        #self.vicon_mutex.acquire()
         self.pos[0][0] = self.vicon_pos[0]
         self.pos[0][1] = self.vicon_pos[1] 
         self.pos[1][2] = self.euler
         self.velocity_current = self.vicon_speed
         self.yaw_dot = self.vicon_yawrate
-#		self.vicon_mutex.release()
+        #self.vicon_mutex.release()
 	
         self.desiredUpdate()
         pos_d, dR_d = self.evalPath(self.r)
@@ -942,7 +944,7 @@ def ReadMainframe():
 	#clean up our socket
     sock.close() #todo - we need to restart this for the next experiment
 
-########### ROS SERVICES ###########
+    ########### ROS SERVICES ###########
 
 
 def StateMessage():
@@ -973,6 +975,7 @@ def StateMessage():
 		rate.sleep()
 
 	sock.close()
+
 
 def saveData(file_obj, time, stateVec):
         saveString = str(time)
