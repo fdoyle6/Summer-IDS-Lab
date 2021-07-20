@@ -648,6 +648,7 @@ class line_follower(object):
         self.sensorString = self.ser.readline() #ERROR IS IN THIS LINE/PROCESS
         print("Recieved data from Arduino")
         self.sensorData = self.sensorString.split(',')
+        print(sensorData)
         self.sVelo = float(self.sensorData[0]); self.sAccel0 = float(self.sensorData[1])
         self.sAccel1 = float(self.sensorData[2]); self.sAccel2 = float(self.sensorData[3])
         self.sMag0 = float(self.sensorData[4]); self.sMag1 = float(self.sensorData[5])
