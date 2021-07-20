@@ -288,6 +288,7 @@ class line_follower(object):
 
 
 		# Create files if collecting data
+        global recordingData
         if recordingData:
             global file1, file2, file3;
             file1 = open(file1_name, "w")         # file for VICON data
@@ -615,7 +616,7 @@ class line_follower(object):
 
         motor_comm = [float(steering_angle),float(velocity)]
 	
-        print(velocity, "\t*********************")
+        print(velocity, "\t*********************") # SECOND LOOP STOPS HERE
 
         if abs(velocity) < 0.01:
 #			print "TRYING TO STOP!!!!"
@@ -682,6 +683,7 @@ class line_follower(object):
         self.wayPoint[3] = self.desiredVlat; self.wayPoint[4] = self.desiredTheta
         self.wayPoint[5] = self.desiredTheta_dot
 		
+        global recordingData
         if recordingData:        
             if not (np.allclose(self.ViconState, self.oldViconState)):
                 saveData(file1, self.vTime, self.ViconState)
