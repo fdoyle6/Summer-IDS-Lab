@@ -156,6 +156,7 @@ void loop() {
 
   // Data Collection and Export ------------------------------------------------------------------------------------
   if (1) { //may need to change to 2 *** NEED TO CHANGE BACK TO  `if (Serial.available() == 1)` ***
+    Serial.read();
     sensors.read(); //read accel, mag, & gyro data; velo data already found 
 
     //Serial.println(everything?);
