@@ -136,7 +136,6 @@ void loop() {
   
   voltageZ = readBatteryMillivolts()/1000;
   //Serial.println(readBatteryMillivolts());
-  //Serial.println(voltageZ); //need to add this to the sent vector later
 
   //Serial.println("Desired Steering after serial:");
   //Serial.println(desiredSteering);
@@ -161,7 +160,7 @@ void loop() {
 
     //Serial.println(everything?);
     
-    Serial.print(actualVelocity, 6); Serial.print(','); // keep 6 decimal places size = 4
+    Serial.print(actualVelocity, 6); Serial.print(','); // keep 6 decimal places; size = 4?
     Serial.print(sensors.a.x); Serial.print(',');      //size = 2
     Serial.print(sensors.a.y); Serial.print(',');       //size = 2
     Serial.print(sensors.a.z); Serial.print(',');       //size = 2
