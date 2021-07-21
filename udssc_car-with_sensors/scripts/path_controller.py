@@ -633,7 +633,9 @@ class line_follower(object):
         
         # Save Data to text files:
         # Poll the Arduino to check & output the sensor data
+        print("Fail point for second iteration")
         self.ser.write('1') # second loop fails here
+        print("Passed serial.write")
         
     	# probably don't need new variables?
         # give the Arduino a tiny delay to send all of the data
@@ -643,12 +645,9 @@ class line_follower(object):
         self.vThetaDot = self.yaw_dot
         self.vSpeed = self.velocity_current 
         self.vTime = rospy.get_time()
-       	
-        print("About to recieve data from Arduino")
-	 
+        
         # Recieve the data from the Arduino
-        self.sensorString = self.ser.readline() #ERROR IS IN THIS LINE/PROCESS
-        print("Recieved data from Arduino")
+        self.sensorString = self.ser.readline()
         self.sensorData = self.sensorString.split(',')
         print(self.sensorData)
         self.sVelo = float(self.sensorData[0]); self.sAccel0 = float(self.sensorData[1])
@@ -657,8 +656,6 @@ class line_follower(object):
         self.sMag2 = float(self.sensorData[6]); self.Gyro0 = float(self.sensorData[7])
         self.sGyro1 = float(self.sensorData[8]); self.sGyro2 = float(self.sensorData[9])
         self.batteryVoltage = float(self.sensorData[10]); self.sTime = rospy.get_time()
-	
-        print("passed arduino code block")
 
     	# *** NEED TO READ AND RECORD THE WAYPOINT DATA IN HERE ***
         self.desiredX = self.position_desired[0]; self.desiredY = self.position_desired[1]
@@ -685,6 +682,7 @@ class line_follower(object):
         self.wayPoint[5] = self.desiredTheta_dot
 		
         global recordingData
+        print("Pre-Data recordingData Update:", recordingData) 
         if recordingData:        
             if not (np.allclose(self.ViconState, self.oldViconState)):
                 saveData(file1, self.vTime, self.ViconState)
