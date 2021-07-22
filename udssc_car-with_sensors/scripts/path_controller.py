@@ -647,7 +647,7 @@ class line_follower(object):
         # Recieve the data from the Arduino
         while self.sensorString == '':
             self.sensorString = self.ser.readline()
-            print('sensorString = \'\'; trying to record data again')
+            print('sensorString = \'\'; trying to record data')
         while self.sensorString[-1] != '\n':
             self.sensorString = self.sensorString + self.ser.readline()
         
