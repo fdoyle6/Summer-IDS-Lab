@@ -689,7 +689,7 @@ class line_follower(object):
 		
         global recordingData, file1, file2, file3 # We're gonna assume that this is true for now
         print("Pre-Data recordingData Update:", recordingData) 
-        if 1:        
+        if recordingData:        
             if not (np.allclose(self.ViconState, self.oldViconState)):
                 self.saveData(file1, self.vTime, self.ViconState)
                 self.oldViconState = self.ViconState; self.o_vTime = self.vTime
@@ -889,7 +889,7 @@ class line_follower(object):
         return v_cmd, direction
     
     def saveData(self, file_obj, time, stateVec):
-        #global file1, file2, file3
+        global file1, file2, file3
         saveString = str(time)
         for ele in stateVec:
                 saveString += '\t' + str(ele)        #use tabs so I can use np.genfromtxt() to analyze 
