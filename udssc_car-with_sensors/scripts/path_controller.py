@@ -889,7 +889,7 @@ class line_follower(object):
         return v_cmd, direction
     
     def saveData(self, file_obj, time, stateVec):
-        global file1, file2, file3
+        global file_obj
         saveString = str(time)
         for ele in stateVec:
                 saveString += '\t' + str(ele)        #use tabs so I can use np.genfromtxt() to analyze 
