@@ -645,7 +645,10 @@ class line_follower(object):
         self.vTime = rospy.get_time()
         
         # Recieve the data from the Arduino
-        self.sensorString = self.ser.readline()
+        while self.sensorString == '':
+            self.sensorString = self.ser.readline()
+            print('sensorString = \'\'; trying to record data again')
+        
         print(self.sensorString)
         self.sensorData = self.sensorString.split(',')
         print(self.sensorData)
@@ -655,6 +658,8 @@ class line_follower(object):
         self.sMag2 = float(self.sensorData[6]); self.Gyro0 = float(self.sensorData[7])
         self.sGyro1 = float(self.sensorData[8]); self.sGyro2 = float(self.sensorData[9])
         self.batteryVoltage = float(self.sensorData[10]); self.sTime = rospy.get_time()
+        
+        self.sensorString = ''
 
     	# *** NEED TO READ AND RECORD THE WAYPOINT DATA IN HERE ***
         self.desiredX = self.position_desired[0]; self.desiredY = self.position_desired[1]
