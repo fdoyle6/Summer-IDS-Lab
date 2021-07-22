@@ -887,6 +887,16 @@ class line_follower(object):
         self.last_pos_err = pos_err
 
         return v_cmd, direction
+    
+    def saveData(self, file_obj, time, stateVec):
+        #global file1, file2, file3
+        saveString = str(time)
+        for ele in stateVec:
+                saveString += '\t' + str(ele)        #use tabs so I can use np.genfromtxt() to analyze 
+        saveString += '\n'; print(saveString)
+        print(file_obj)     # TODO - write does not work
+        file_obj.write(saveString)
+        saveString = '\0'         # just for scoping stuff
 
 
 
@@ -983,17 +993,6 @@ def StateMessage():
 		rate.sleep()
 
 	sock.close()
-
-
-def saveData(file_obj, time, stateVec):
-        #global file1, file2, file3
-        saveString = str(time)
-        for ele in stateVec:
-                saveString += '\t' + str(ele)        #use tabs so I can use np.genfromtxt() to analyze 
-        saveString += '\n'; print(saveString)
-        print(file_obj)     # TODO - write does not work
-        file_obj.write(saveString)
-        saveString = '\0'         # just for scoping stuff
 
 
 if __name__ == '__main__':
