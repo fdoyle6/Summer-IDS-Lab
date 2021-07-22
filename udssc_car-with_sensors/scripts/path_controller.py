@@ -648,6 +648,8 @@ class line_follower(object):
         while self.sensorString == '':
             self.sensorString = self.ser.readline()
             print('sensorString = \'\'; trying to record data again')
+        while self.sensorString[-1] != '\n':
+            self.sensorString = self.sensorString + self.ser.readline()
         
         print(self.sensorString)
         self.sensorData = self.sensorString.split(',')
