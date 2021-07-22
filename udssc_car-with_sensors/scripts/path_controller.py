@@ -687,9 +687,9 @@ class line_follower(object):
         self.wayPoint[3] = self.desiredVlat; self.wayPoint[4] = self.desiredTheta
         self.wayPoint[5] = self.desiredTheta_dot
 		
-        global recordingData
+        global recordingData, file1, file2, file3 # We're gonna assume that this is true for now
         print("Pre-Data recordingData Update:", recordingData) 
-        if recordingData:        
+        if 1:        
             if not (np.allclose(self.ViconState, self.oldViconState)):
                 self.saveData(file1, self.vTime, self.ViconState)
                 self.oldViconState = self.ViconState; self.o_vTime = self.vTime
