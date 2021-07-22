@@ -633,9 +633,7 @@ class line_follower(object):
         
         # Save Data to text files:
         # Poll the Arduino to check & output the sensor data
-        print("Fail point for second iteration")
-        self.ser.write('1') # second loop fails here
-        print("Passed serial.write")
+        self.ser.write('1')
         
     	# probably don't need new variables?
         # give the Arduino a tiny delay to send all of the data
@@ -648,6 +646,7 @@ class line_follower(object):
         
         # Recieve the data from the Arduino
         self.sensorString = self.ser.readline()
+        print(self.sensorString)
         self.sensorData = self.sensorString.split(',')
         print(self.sensorData)
         self.sVelo = float(self.sensorData[0]); self.sAccel0 = float(self.sensorData[1])
