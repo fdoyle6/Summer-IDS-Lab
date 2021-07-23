@@ -1,0 +1,1 @@
+Time	Desired X	Desired Y	Desired V_head	Desired V_lat	Desired Theta	Desired Theta_dot
