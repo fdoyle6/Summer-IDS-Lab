@@ -987,7 +987,7 @@ def saveData(file_obj, time, stateVec):
     saveString = str(time)
     for ele in stateVec:
         saveString += '\t' + str(ele)        #use tabs so I can use np.genfromtxt() to analyze 
-    saveString += '\n'; # print(saveString)
+    saveString += '\n'; print(saveString)
     file_obj.write(saveString); file_obj.flush()
     saveString = '\0'         # just for scoping stuff
 
