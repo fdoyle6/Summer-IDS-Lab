@@ -297,11 +297,11 @@ class line_follower(object):
             file3 = open(file3_name, "w")	   # file for idealized trajectories
 
     		# Add headers to data files
-            self.saveData(file1, 'Time', ['X', 'Y', 'Heading Angle', 'Angular Velocity', 'Speed'])
-            self.saveData(file2, 'Time', ['Heading Velocity', 'Acceleration 1', 'Acceleration 2', 
+            saveData(file1, 'Time', ['X', 'Y', 'Heading Angle', 'Angular Velocity', 'Speed'])
+            saveData(file2, 'Time', ['Heading Velocity', 'Acceleration 1', 'Acceleration 2', 
                                      'Acceleration 3', 'Compass 1', 'Compass 2', 'Compass 3', 
                                      'Gyro 1', 'Gyro 2', 'Gyro 3'])
-            self.saveData(file3, 'Time', ['Desired X', 'Desired Y', 'Desired V_head', 
+            saveData(file3, 'Time', ['Desired X', 'Desired Y', 'Desired V_head', 
                                              'Desired V_lat', 'Desired Theta', 'Desired Theta_dot'])
 
 		# 2 components of acceleration, 2 compass components, and 2 gyro components are useless 
@@ -691,15 +691,15 @@ class line_follower(object):
         print("Pre-Data recordingData Update:", recordingData) 
         if recordingData:        
             if not (np.allclose(self.ViconState, self.oldViconState)):
-                self.saveData(file1, self.vTime, self.ViconState)
+                saveData(file1, self.vTime, self.ViconState)
                 self.oldViconState = self.ViconState; self.o_vTime = self.vTime
 
             if not (np.allclose(self.sensorState, self.oldSensorState)):
-                self.saveData(file2, self.sTime, self.sensorState)
+                saveData(file2, self.sTime, self.sensorState)
                 self.oldSensorState = self.sensorState; self.o_sTime = self.sTime
 
             if not (np.allclose(self.wayPoint, self.oldWayPoint)):
-                self.saveData(file3, self.wTime, self.wayPoint)
+                saveData(file3, self.wTime, self.wayPoint)
                 self.oldWayPoint = self.wayPoint; self.o_wTime = self.wTime
 
 
@@ -888,18 +888,6 @@ class line_follower(object):
 
         return v_cmd, direction
     
-    def saveData(self, file_obj, time, stateVec):
-        # global file_obj
-        saveString = str(time)
-        for ele in stateVec:
-                saveString += '\t' + str(ele)        #use tabs so I can use np.genfromtxt() to analyze 
-        saveString += '\n'; print(saveString)
-        print(file_obj)     # TODO - write does not work
-        file_obj.write(saveString)
-        saveString = '\0'         # just for scoping stuff
-
-
-
 
 
 ########## SOCKET TO READ MAINFRAME DATA #########
@@ -993,6 +981,15 @@ def StateMessage():
 		rate.sleep()
 
 	sock.close()
+    
+def saveData(file_obj, time, stateVec):
+    # global file_obj
+    saveString = str(time)
+    for ele in stateVec:
+        saveString += '\t' + str(ele)        #use tabs so I can use np.genfromtxt() to analyze 
+    saveString += '\n'; # print(saveString)
+    file_obj.write(saveString); file_obj.flush()
+    saveString = '\0'         # just for scoping stuff
 
 
 if __name__ == '__main__':
