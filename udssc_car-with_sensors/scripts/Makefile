@@ -1,2 +1,2 @@
 clean:
-	rm *.txt
+	rm data_collection/*.txt

@@ -45,9 +45,9 @@ recordingData = 1 	# if recording and exporting data = 1 (True) if not 0 (False)
 runNumber = '1' #Run number and car number for exported data files
 carNumber = '3'
 
-file1_name = 'VICON_Data-Run_' + runNumber + '-Car_Number_' + carNumber +'.txt'
-file2_name = 'Sensor_Data-Run_' + runNumber + '-Car_Number_' + carNumber +'.txt'
-file3_name = 'Waypoint_Data-Run_' + runNumber + '-Car_Number_' + carNumber +'.txt'
+file1_name = 'data_collection/VICON_Data-Run_' + runNumber + '-Car_Number_' + carNumber +'.txt'
+file2_name = 'data_collection/Sensor_Data-Run_' + runNumber + '-Car_Number_' + carNumber +'.txt'
+file3_name = 'data_collection/Waypoint_Data-Run_' + runNumber + '-Car_Number_' + carNumber +'.txt'
 
 global lf
 
