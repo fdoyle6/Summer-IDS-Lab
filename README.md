@@ -5,9 +5,9 @@ The programs written over the summer of 2021 while working for the University of
 Information and Decision Sciences (IDS) Lab. For more information about the lab and its other
 projects, please visit https://sites.udel.edu/ids-lab/ . This repository and README will be
 updated somewhat reguarly as progress is made on these projects. Weird note: all commits and 
-edits saved to this repo were made by myself, though I don't know why the `git commit/push` 
-commands have them registered as being from someone else. I will be working on fixing this 
-sometime soon.
+edits saved to this repo were made by myself, though they may be labeled as being committed by
+someone else because of two shared computers (a raspberry pi and a computer in the lab). I will 
+be working on fixing this from time to time.
 
 ### Detailed Repository Description: 
 During the summer going into my senior year at UD, I created a set of programs to estimate the 
@@ -16,8 +16,9 @@ sensors. This ensures the car would be able to follow a preset trajectory in the
 were to lose contact with VICON (an effective GPS system) and/or the centralized control system 
 (CCS). This was done by using an Extended Kalman Filter, and the code in this repository was 
 used to advance the existing code for the SSC cars. Note: Most of the code for the cars in
-the SSC is in a private repository so the full programs will not be shown, though what my code
-is in here will be the same form as it is in the hidden programs.
+the SSC is in a private repository so the full programs will not be shown, though what code
+is shown in this repository (specifically in ./udssc_car-with_sensors) is the same as it is
+in the hidden repository (with the changes I've made added).
 
 ### File Descriptions:
   - udssc_car-with_sensors - the code that the SSC uses in its cars to run experiments, with
