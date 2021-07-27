@@ -6,14 +6,19 @@ from scipy import linalg as l_alg
 from matplotlib import pyplot as plt
 
 # just so the code will run
-
 # Dummy state and control variables
-oldX1 = 0; oldX2 = 1; oldX3 = 2; oldX4 = 3; oldX5 = 1; oldX6 = 5
+oldX1 = 0; oldX2 = 1; oldX3 = 2; oldX4 = 3; oldX5 = 4; oldX6 = 5
 ah = 0; al = 0; omega = 0; omega_dot = 0
 
 # Dummy Uncertainties
 d_x = 1; d_y = 1; d_vh = 1; d_vl = 1; d_theta = 1; d_theta_dot = 1
-s_x = 1; s_y = 1; s_vh = 1; s_vl = 1; s_theta = 1; s_theta_dot = 1
+s_vh = 1; s_vl = 1; s_theta = 1; s_theta_dot = 1
+
+# Dummy Sensor Readings
+sensor1 = 2.1; sensor2 = 2.9; sensor3 = 4.0; sensor4 = 5.2
+
+# Propogation of error coefficient
+h = 1 # should update every loop through
 
 # Assume oldX is the known state of the system and we're trying
 # to calculate X (X[i+1]) from oldX (X[i])
@@ -56,33 +61,51 @@ B = np.array([ [0, 0, 0, 0],
 X_dot = np.matmul(F, oldX) + np.matmul(B, U)
 X_hat = X_dot*dt + oldX
 
-# Output Matrix (assumes Y[i] = C X[i] w/ no pass-though from U) 
-''' is the Y = C X + 0 U assumption valid with U[2] = omega?? '''
-C = np.diag(np.ones_like(X_hat))
-C[0][0] = 0; C[1][1] = 0;
+# Output Matrix (Y[i] = C X[i] + 0 U[i])
+C = np.zeros((4, 6))
+C[0][2] = 1; C[1][3] = 1; C[2][4] = 1; C[3][5] = 1
 
 # Calculate Y
 Y_hat = np.matmul(C, X_hat)
+Y[0] = sensor1; Y[1] = sensor2; Y[2] = sensor3; Y[3] = sensor4
 
 # Probability Calculations
 # Variance Matrices (disturbance & noise, respectively)
 V_dist = np.diag([ d_x, d_y, d_vh, d_vl, d_theta, d_theta_dot ])
-V_noise = np.diag([ s_x, s_y, s_vh, s_vl, s_theta, s_theta_dot ])
+V_noise = np.diag([ s_vh, s_vl, s_theta, s_theta_dot ])
 
-# Kalman gain -> should either be 6x4 or 4x6 - which one is it?
+# Probability A Priori
+P = np.zeros_like(X_hat)
+
+# Calculate A Priori
+P = np.matmul(np.matmul(F, P), F.transpose()) + V_dist
+
+# Kalman gain -> should be 6x4
 K_f = np.zeros((6, 4), dtype = float)
 
+''' Omitted because reference was using dx_hat/dt = ...
 # Solve Riccati equation assuming continuous system
 # What are the dimenstions of the solution of a Riccatti Equ?
 Ric_Soln = np.zeros_like(X_hat)
-Ric_Soln = l_alg.solve_continuous_are(F.transpose(), C.transpose(), V_dist, V_noise)
+Ric_Soln = l_alg.solve_continuous_are(F.transpose(), C.transpose(), V_dist, V_noise) 
 
 # Calculate Kalman gain
 K_f = np.matmul(np.matmul(Ric_Soln, C.transpose), V_noise)
+'''
 
-# Update X from Kalman Gain
-'''Need to finish calculation steps'''
+# Calculate Kalman Gain
+bigBoi = np.matmul(np.matmul(C, P), C.transpose()) + V_noise
+K_f = np.matmul(np.matmul(P, C.transpose()), np.linalg.inv(bigBoi))
 
+# Update the prediction & give the estimated state
+X = X_hat + np.matmul(K_f, (Y - h*Y_hat))
+
+# Calculate the final Probability for that location
+P = np.matmul((1 - np.matmul(K_f, C)), P)
+
+# Fin du calculation
+
+# TODO - change over to the np.matrix class to help out with the notation
 
 
 
