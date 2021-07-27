@@ -47,8 +47,6 @@ F = np.array([ [0, 0, np.cos(oldX[4]), -np.sin(oldX[4]), -oldX[2]*np.sin(oldX[4]
      [0, 0, 0, 0, 0, 1],
      [0, 0, 0, 0, 0, 0] ])
 
-print(l_alg.eig(F))
-
 # control input matrix
 B = np.array([ [0, 0, 0, 0],
      [0, 0, 0, 0],
@@ -95,7 +93,7 @@ K_f = np.matmul(np.matmul(Ric_Soln, C.transpose), V_noise)
 
 # Calculate Kalman Gain
 bigBoi = np.matmul(np.matmul(C, P), C.transpose()) + V_noise
-K_f = np.matmul(np.matmul(P, C.transpose()), np.linalg.inv(bigBoi))
+K_f = np.matmul(np.matmul(P, C.transpose()), l_alg.inv(bigBoi))
 
 # Update the prediction & give the estimated state
 X = X_hat + np.matmul(K_f, (Y - h*Y_hat))
@@ -103,9 +101,6 @@ X = X_hat + np.matmul(K_f, (Y - h*Y_hat))
 # Calculate the final Probability for that location
 P = np.matmul((1 - np.matmul(K_f, C)), P)
 
-# Fin du calculation
+# Fin
 
-# TODO - change over to the np.matrix class to help out with the notation
-
-
-
+# TODO - Put in shorthands to make the code more readable
