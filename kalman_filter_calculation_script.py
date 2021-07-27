@@ -3,16 +3,27 @@
 # in import statements
 import numpy as np 
 from scipy import linalg as l_alg
+from matplotlib import pyplot as plt
+
+# just so the code will run
+
+# Dummy state and control variables
+oldX1 = 0; oldX2 = 1; oldX3 = 2; oldX4 = 3; oldX5 = 1; oldX6 = 5
+ah = 0; al = 0; omega = 0; omega_dot = 0
+
+# Dummy Uncertainties
+d_x = 1; d_y = 1; d_vh = 1; d_vl = 1; d_theta = 1; d_theta_dot = 1
+s_x = 1; s_y = 1; s_vh = 1; s_vl = 1; s_theta = 1; s_theta_dot = 1
 
 # Assume oldX is the known state of the system and we're trying
 # to calculate X (X[i+1]) from oldX (X[i])
 # X = np.array([x, y, vh, vl, theta, theta_dot]) # really will be 0's but here for readability
-oldX = np.array([oldX1, oldX2, oldX3, oldX4, oldX5, oldX6]) # filled with the previous time-step's X
+oldX = np.array([ oldX1, oldX2, oldX3, oldX4, oldX5, oldX6 ]) # filled with the previous time-step's X
 X_hat = np.zeros_like(oldX)
 
 # use X_dot[i] = F[i]*X[i] + B*U[i]; X[i+1] = X_dot[i]*dt + X[i] (only need one X_dot)
 X_dot = np.zeros_like(oldX)
-dt = 1/1000 # sampling rate or clock frequency
+dt = 25/1000 # sampling rate or clock frequency ***currently about 25 ms***
 
 # Control input - only one U vector because it gets recalculated independently later
 # and the previous U does not need to be saved
@@ -31,6 +42,8 @@ F = np.array([ [0, 0, np.cos(oldX[4]), -np.sin(oldX[4]), -oldX[2]*np.sin(oldX[4]
      [0, 0, 0, 0, 0, 1],
      [0, 0, 0, 0, 0, 0] ])
 
+print(l_alg.eig(F))
+
 # control input matrix
 B = np.array([ [0, 0, 0, 0],
      [0, 0, 0, 0],
@@ -45,7 +58,7 @@ X_hat = X_dot*dt + oldX
 
 # Output Matrix (assumes Y[i] = C X[i] w/ no pass-though from U) 
 ''' is the Y = C X + 0 U assumption valid with U[2] = omega?? '''
-C = np.diag(np.ones_like[X_hat])
+C = np.diag(np.ones_like(X_hat))
 C[0][0] = 0; C[1][1] = 0;
 
 # Calculate Y
@@ -59,11 +72,10 @@ V_noise = np.diag([ s_x, s_y, s_vh, s_vl, s_theta, s_theta_dot ])
 # Kalman gain -> should either be 6x4 or 4x6 - which one is it?
 K_f = np.zeros((6, 4), dtype = float)
 
-# Solve Riccati equation
-'''Is this technically a continuous or discrete system to calc the Kalman gain?'''
+# Solve Riccati equation assuming continuous system
 # What are the dimenstions of the solution of a Riccatti Equ?
 Ric_Soln = np.zeros_like(X_hat)
-Ric_Soln = l_alg.solve_continuous_are(F.transpose, C.transpose, V_dist, V_noise)
+Ric_Soln = l_alg.solve_continuous_are(F.transpose(), C.transpose(), V_dist, V_noise)
 
 # Calculate Kalman gain
 K_f = np.matmul(np.matmul(Ric_Soln, C.transpose), V_noise)
