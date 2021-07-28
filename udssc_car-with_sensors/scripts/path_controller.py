@@ -647,7 +647,7 @@ class line_follower(object):
         # Recieve the data from the Arduino
         while self.sensorString == '':
             self.sensorString = self.ser.readline()
-            print('sensorString = \'\'; trying to record data')
+            print('Trying to record data from Arduino')
         while self.sensorString[-1] != '\n':
             self.sensorString = self.sensorString + self.ser.readline()
         
@@ -690,18 +690,13 @@ class line_follower(object):
         global recordingData, file1, file2, file3 # We're gonna assume that this is true for now
         print("Pre-Data recordingData Update:", recordingData) 
         if recordingData:        
-            if not (np.allclose(self.ViconState, self.oldViconState)):
-                saveData(file1, self.vTime, self.ViconState)
-                self.oldViconState = self.ViconState; self.o_vTime = self.vTime
-
-            if not (np.allclose(self.sensorState, self.oldSensorState)):
-                saveData(file2, self.sTime, self.sensorState)
-                self.oldSensorState = self.sensorState; self.o_sTime = self.sTime
-
-            if not (np.allclose(self.wayPoint, self.oldWayPoint)):
-                saveData(file3, self.wTime, self.wayPoint)
-                self.oldWayPoint = self.wayPoint; self.o_wTime = self.wTime
-
+            saveData(file1, self.vTime, self.ViconState)
+            saveData(file2, self.sTime, self.sensorState)
+            saveData(file3, self.wTime, self.wayPoint)
+            
+            self.oldViconState = self.ViconState; self.o_vTime = self.vTime
+            self.oldSensorState = self.sensorState; self.o_sTime = self.sTime
+            self.oldWayPoint = self.wayPoint; self.o_wTime = self.wTime
 
 		# Store old variables
         self.time_old = self.time
