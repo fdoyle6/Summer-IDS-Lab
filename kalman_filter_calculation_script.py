@@ -56,7 +56,7 @@ B = np.array([ [0, 0, 0, 0],
      [0, 0, 0, 1] ])
 
 # Dynamical Model Predictions
-X_dot = np.matmul(F, oldX) + np.matmul(B, U)
+X_dot = F@oldX + B@U
 X_hat = X_dot*dt + oldX
 
 # Output Matrix (Y[i] = C X[i] + 0 U[i])
@@ -64,7 +64,7 @@ C = np.zeros((4, 6))
 C[0][2] = 1; C[1][3] = 1; C[2][4] = 1; C[3][5] = 1
 
 # Calculate Y
-Y_hat = np.matmul(C, X_hat)
+Y_hat = C@oldX
 Y[0] = sensor1; Y[1] = sensor2; Y[2] = sensor3; Y[3] = sensor4
 
 # Probability Calculations
@@ -76,7 +76,7 @@ V_noise = np.diag([ s_vh, s_vl, s_theta, s_theta_dot ])
 P = np.zeros_like(X_hat)
 
 # Calculate A Priori
-P = np.matmul(np.matmul(F, P), F.transpose()) + V_dist
+P = (F@P)@F.transpose() + V_dist
 
 # Kalman gain -> should be 6x4
 K_f = np.zeros((6, 4), dtype = float)
@@ -92,14 +92,14 @@ K_f = np.matmul(np.matmul(Ric_Soln, C.transpose), V_noise)
 '''
 
 # Calculate Kalman Gain
-bigBoi = np.matmul(np.matmul(C, P), C.transpose()) + V_noise
-K_f = np.matmul(np.matmul(P, C.transpose()), l_alg.inv(bigBoi))
+bigBoi = (C@P)@C.transpose() + V_noise
+K_f = (P@C.transpose())@l_alg.inv(bigBoi)
 
 # Update the prediction & give the estimated state
-X = X_hat + np.matmul(K_f, (Y - h*Y_hat))
+X = X_hat + K_f@(Y - h*Y_hat)
 
 # Calculate the final Probability for that location
-P = np.matmul((1 - np.matmul(K_f, C)), P)
+P = (1 - (K_f@C))@P
 
 # Fin
 
