@@ -99,7 +99,7 @@ K_f = (P@C.transpose())@l_alg.inv(bigBoi)
 X = X_hat + K_f@(Y - h*Y_hat)
 
 # Calculate the final Probability for that location
-P = (1 - (K_f@C))@P
+P = (1 - (K_f@C))@P 
 
 # Fin
 
