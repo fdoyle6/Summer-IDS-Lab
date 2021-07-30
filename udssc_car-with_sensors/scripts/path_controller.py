@@ -305,7 +305,7 @@ class line_follower(object):
                                              'Desired_V_lat', 'Desired_Theta', 'Desired_Theta_dot'])
 
 		# 2 components of acceleration, 2 compass components, and 2 gyro components are useless 
-		# for right now, but I'm keeping all of them so I know how the sensors work completely.
+		# for right now, but I'm keeping all of them so I know how the sensors work fully.
 		
         rospy.loginfo("Initialization complete!")
         rospy.loginfo("Using code version: " + code_version)
