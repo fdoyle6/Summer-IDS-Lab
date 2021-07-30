@@ -297,12 +297,12 @@ class line_follower(object):
             file3 = open(file3_name, "w")	   # file for idealized trajectories
 
     		# Add headers to data files
-            saveData(file1, 'Time', ['X', 'Y', 'Heading Angle', 'Angular Velocity', 'Speed'])
-            saveData(file2, 'Time', ['Heading Velocity', 'Acceleration 1', 'Acceleration 2', 
-                                     'Acceleration 3', 'Compass 1', 'Compass 2', 'Compass 3', 
-                                     'Gyro 1', 'Gyro 2', 'Gyro 3'])
-            saveData(file3, 'Time', ['Desired X', 'Desired Y', 'Desired V_head', 
-                                             'Desired V_lat', 'Desired Theta', 'Desired Theta_dot'])
+            saveData(file1, 'Time', ['X', 'Y', 'Heading_Angle', 'Angular_Velocity', 'Speed'])
+            saveData(file2, 'Time', ['Heading_Velocity', 'Acceleration_1', 'Acceleration_2', 
+                                     'Acceleration_3', 'Compass_1', 'Compass_2', 'Compass_3', 
+                                     'Gyro_1', 'Gyro_2', 'Gyro_3'])
+            saveData(file3, 'Time', ['Desired_X', 'Desired_Y', 'Desired_V_head', 
+                                             'Desired_V_lat', 'Desired_Theta', 'Desired_Theta_dot'])
 
 		# 2 components of acceleration, 2 compass components, and 2 gyro components are useless 
 		# for right now, but I'm keeping all of them so I know how the sensors work completely.
