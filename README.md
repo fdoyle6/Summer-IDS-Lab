@@ -48,5 +48,3 @@ in the hidden repository (with the changes I've made added).
   system using an Extended Kalman Filter as well as output the confidence in the estimate.
   This is, also, designed to be in another program, specifically the path_controller script
   at ./udssc_car-with_sensors/scripts/path_controller.py .
-  
-  testing
