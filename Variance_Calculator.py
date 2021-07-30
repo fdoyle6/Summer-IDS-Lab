@@ -65,6 +65,11 @@ viconT = viconT - viconT[0]
 sensorT = sensorT - sensorT[0]
 waypointT = waypointT - waypointT[0]
 
+# Trim out the bad data
+viconT = viconT
+sensorT = sensorT
+waypointT = waypointT
+
 # Sensor data unit conversion factors (time doesn't get scaled)
 kVHead = 1.0
 kAccel = 1.0
