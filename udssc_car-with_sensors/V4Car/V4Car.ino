@@ -77,6 +77,7 @@ void setup() {
   attachInterrupt(digitalPinToInterrupt(encoder0PinA), indexRise, RISING);
   myservo.write(110);
   Wire.begin();
+  Wire.start();
   sensors.init();
 }
 
