@@ -687,16 +687,15 @@ class line_follower(object):
         self.wayPoint[3] = self.desiredVlat; self.wayPoint[4] = self.desiredTheta
         self.wayPoint[5] = self.desiredTheta_dot
 		
-        global recordingData, file1, file2, file3 # We're gonna assume that this is true for now
-        print("Pre-Data recordingData Update:", recordingData) 
+        global recordingData, file1, file2, file3
         if recordingData:        
             saveData(file1, self.vTime, self.ViconState)
             saveData(file2, self.sTime, self.sensorState)
+            print('Sensor State Vector:', self.sensorState)
             saveData(file3, self.wTime, self.wayPoint)
+            # self.sensorState = np.zeros_like(self.sensorState)
             
-            self.oldViconState = self.ViconState; self.o_vTime = self.vTime
-            self.oldSensorState = self.sensorState; self.o_sTime = self.sTime
-            self.oldWayPoint = self.wayPoint; self.o_wTime = self.wTime
+            
 
 		# Store old variables
         self.time_old = self.time
@@ -981,8 +980,8 @@ def saveData(file_obj, time, stateVec):
     # global file_obj
     saveString = str(time)
     for ele in stateVec:
-        saveString += '\t' + str(ele)        #use tabs so I can use np.genfromtxt() to analyze 
-    saveString += '\n'; print(saveString)
+        saveString += '\t' + str(ele)        # use tabs so I can use np.genfromtxt() to analyze 
+    saveString += '\n'; # print(saveString)
     file_obj.write(saveString); file_obj.flush()
     saveString = '\0'         # just for scoping stuff
 
