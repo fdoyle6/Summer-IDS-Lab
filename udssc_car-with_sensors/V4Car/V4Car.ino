@@ -78,6 +78,7 @@ void setup() {
   myservo.write(110);
   Wire.begin();
   sensors.init();
+  sensors.enableDefault();
 }
 
 
@@ -156,20 +157,19 @@ void loop() {
   // Data Collection and Export ------------------------------------------------------------------------------------
   if (Serial.available() == 1) {
     Serial.read();
-    sensors.read(); //read accel, mag, & gyro data; velo data already found 
-
-    //Serial.println(everything?);
+    sensors.read(); 
+    // sensors.readAcc(); sensors.readGyro(); sensor.readMag(); //read accel, mag, & gyro data; velo data already found 
     
     Serial.print(actualVelocity, 6); Serial.print(','); // keep 6 decimal places; size = 4?
-    Serial.print(sensors.a.x); Serial.print(',');      //size = 2
-    Serial.print(sensors.a.y); Serial.print(',');       //size = 2
-    Serial.print(sensors.a.z); Serial.print(',');       //size = 2
-    Serial.print(sensors.m.x); Serial.print(',');       //size = 2
-    Serial.print(sensors.m.y); Serial.print(',');       //size = 2
-    Serial.print(sensors.m.z); Serial.print(',');       //size = 2
-    Serial.print(sensors.g.x); Serial.print(',');       //size = 2
-    Serial.print(sensors.g.y); Serial.print(',');       //size = 2
-    Serial.print(sensors.g.z); Serial.print(',');       //size = 2
+    Serial.print(sensors.a.x); Serial.print(',');   
+    Serial.print(sensors.a.y); Serial.print(',');   
+    Serial.print(sensors.a.z); Serial.print(',');
+    Serial.print(sensors.m.x); Serial.print(',');
+    Serial.print(sensors.m.y); Serial.print(',');
+    Serial.print(sensors.m.z); Serial.print(',');    
+    Serial.print(sensors.g.x); Serial.print(',');
+    Serial.print(sensors.g.y); Serial.print(',');     
+    Serial.print(sensors.g.z); Serial.print(',');      
     Serial.print(voltageZ); Serial.println(",;"); //just for the split command and having a definite finish
   }
 
