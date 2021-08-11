@@ -694,7 +694,7 @@ class line_follower(object):
         
         self.sensorString = ''
 
-    	# *** NEED TO READ AND RECORD THE WAYPOINT DATA IN HERE ***
+    	# Waypoint Data
         self.desiredX = self.position_desired[0]; self.desiredY = self.position_desired[1]
         self.desiredVhead = self.velocity_desired; self.desiredVlat = 0.0; 
         self.desiredTheta = yaw_next; self.desiredTheta_dot = yaw_traj_rate
