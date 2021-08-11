@@ -9,6 +9,7 @@ import os
 import platform
 import rospy
 import numpy as np
+from scipy import linalg
 import time
 import compiler
 import tf
@@ -188,11 +189,12 @@ class line_follower(object):
        
         self.batteryVoltage = 0.0	
 	
-	# comparison vectors (time not included in state vector)
+    	# comparison vectors (time not included in state vector)
         self.ViconState = np.array([ self.vX, self.vY, self.vTheta, self.vThetaDot, self.vSpeed ])
         self.sensorState = np.array([ self.sVelo, self.sAccel0, self.sAccel1, self.sAccel2, self.sMag0,
                              self.sMag1, self.sMag2, self.sGyro0, self.sGyro1, self.sGyro2 ])
-        self.wayPoint = np.array([ self.desiredX, self.desiredY, self.desiredVhead, self.desiredVlat,self.desiredTheta, self.desiredTheta_dot ])
+        self.wayPoint = np.array([ self.desiredX, self.desiredY, self.desiredVhead, self.desiredVlat, self.desiredTheta, 
+                                  self.desiredTheta_dot ])
         
         self.sensorString = ''
         self.sensorData = ['', '']
@@ -200,8 +202,37 @@ class line_follower(object):
         self.oldViconState =  np.array([ self.o_vX, self.o_vY, self.o_vTheta, self.o_vThetaDot, self.o_vSpeed ])
         self.oldSensorState = np.array([ self.o_sVelo, self.o_sAccel0, self.o_sAccel1, self.o_sAccel2, self.o_sMag0, 
                                self.o_sMag1, self.o_sMag2, self.o_sGyro0, self.o_sGyro1, self.o_sGyro2 ])
-       	self.oldWayPoint = np.array([ self.o_desiredX, self.o_desiredY, self.o_desiredVhead, self.o_desiredVlat,self.o_desiredTheta, self.o_desiredTheta_dot ])
+       	self.oldWayPoint = np.array([ self.o_desiredX, self.o_desiredY, self.o_desiredVhead, self.o_desiredVlat, 
+                                     self.o_desiredTheta, self.o_desiredTheta_dot ])
 		
+        # State Estimation Variables
+        self.X = np.zeros(shape = (1, 6))
+        self.nextX = np.zeros_like(self.X)
+        self.X_dot = np.zeros_like(self.X)
+        self.Y_hat = np.zeros(shape = (1, 4))
+        self.Y_sensor = np.zeros(shape = (1, 4))
+        self.dt = 25/1000   # ~ 25 milliseconds (may want to measure)
+        
+        # State Estimation Probability
+        self.P = np.zeros_like(self.X)
+        
+        # Dynamical Model Matrices
+        self.F = np.zeros(shape = (6, 6)); self.F[4][5] = 1  # this changes every iteration so just declare the variable
+        self.B = np.array([ [0, 0, 0, 0], # static matrix
+                           [0, 0, 0, 0],
+                           [1, 0, 0, 0],
+                           [0, 1, 0, 0],
+                           [0, 0, 1, 0],
+                           [0, 0, 0, 1] ])
+        
+        self.C = np.zeros((4, 6))   # Also static so hard-coded
+        self.C[0][2] = 1; self.C[1][3] = 1; self.C[2][4] = 1; self.C[3][5] = 1
+        
+        # Uncertainty Matrices
+        # TODO - Update these Matrices
+        self.V_dist = np.diag([ 1, 1, 1, 1, 1, 1])
+        self.V_noise = np.diag([ 1, 1, 1, 1])
+        
 		#state read
         self.soc = -1
         self.position_desired = np.zeros(2)
@@ -228,7 +259,7 @@ class line_follower(object):
         self.ser.flushInput()
         self.ser.write("0,0;")
 
-	# ROS Topics
+    	# ROS Topics
         self.update_pose = rospy.Publisher(self.hostname + '/pose', PoseStamped, queue_size=5)
         self.update_target = rospy.Publisher(self.hostname+'/target', PoseStamped, queue_size=5)
         self.update_steering = rospy.Publisher(self.hostname+'/steering', PoseStamped, queue_size=5)
@@ -675,14 +706,14 @@ class line_follower(object):
         self.ViconState[3] = self.vThetaDot; self.ViconState[4] = self.vSpeed
         
         # self.sensorState = [ self.sVelo, self.sAccel0, self.sAccel1, self.sAccel2, self.sMag0, ...
-        # self.sMag1, self.sMag2, self.sGyro0, self.sGyro1, self.sGyro2 ]
+        #                      self.sMag1, self.sMag2, self.sGyro0, self.sGyro1, self.sGyro2 ]
         self.sensorState[0] = self.sVelo; self.sensorState[1] = self.sAccel0; self.sensorState[2] = self.sAccel1
         self.sensorState[3] = self.sAccel2; self.sensorState[4] = self.sMag0; self.sensorState[5] = self.sMag1
         self.sensorState[6] = self.sMag2; self.sensorState[7] = self.sGyro0; self.sensorState[8] = self.sGyro1
         self.sensorState[9] = self.sGyro2
         
         # self.wayPoint = [ self.desiredX, self.desiredY, self.desiredVhead, self.desiredVlat, ...
-        # self.desiredTheta, self.desiredTheta_dot ]
+        #                   self.desiredTheta, self.desiredTheta_dot ]
         self.wayPoint[0] = self.desiredX; self.wayPoint[1] = self.desiredY; self.wayPoint[2] = self.desiredVhead
         self.wayPoint[3] = self.desiredVlat; self.wayPoint[4] = self.desiredTheta
         self.wayPoint[5] = self.desiredTheta_dot
@@ -881,6 +912,41 @@ class line_follower(object):
         self.last_pos_err = pos_err
 
         return v_cmd, direction
+    
+    
+    
+    
+    def stateEst(self):
+        # uses Y_i = C X_i ; X_dot_i = F_i X_i + B U_i
+        self.Y_hat = self.C @ self.X
+        
+        # Update Probability (A Priori)
+        self.P = (self.F @ self.P) @ self.F.transpose() + self.V_noise
+        
+        # Calculate the Kalman Gain
+        k1 = (self.C @ self.P) @ self.C.transpose() + self.V_noise
+        K_f = (self.P @ self.C.transpose()) @ linalg.inv(k1)
+        
+        # Calculate Probable State
+        self.X = self.nextX + K_f @ (self.Y_sensor - self.Y_hat)
+        
+        # A posteriori probability
+        self.P = (1 - (K_f @ self.C) ) @ self.P
+        
+        # update F
+        # TODO: Modeling may not be accurate here -> a lot of slip in these cars
+        self.F[0][2] = np.cos(self.X[4]); self.F[0][3] = -np.sin(self.X[4])
+        self.F[0][4] = -self.X[2]*np.sin(self.X[4]) - self.X[3]*np.cos(self.X[4])
+        self.F[1][2] = np.sin(self.X[4]); self.F[1][3] = np.cos(self.X[4])
+        self.F[1][4] = self.X[2]*np.cos(self.X[4]) - self.X[3]*np.sin(self.X[4])
+        self.F[2][3] = self.X[5]; self.F[2][5] = self.X[2]
+        self.F[3][2] = self.X[5]; self.F[3][5] = self.X[3]
+        
+        # Predict the next X
+        self.X_dot = (self.F @ self.X) + (self.B @ self.U)
+        self.nextX = self.X + self.X_dot * self.dt
+        
+        return
     
 
 
