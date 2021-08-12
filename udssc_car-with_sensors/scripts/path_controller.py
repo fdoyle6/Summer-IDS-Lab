@@ -151,7 +151,7 @@ class line_follower(object):
         self.sGyro2 = 0.0 
         self.sTime = rospy.get_time()
 
-        self.desiredX = 0.0	# Waypoint Variables - *** MAY NEED MORE ***
+        self.desiredX = 0.0	# Waypoint Variables
         self.desiredY = 0.0
         self.desiredVhead = 0.0
         self.desiredVlat = 0.0
@@ -726,7 +726,7 @@ class line_follower(object):
             saveData(file3, self.wTime, self.wayPoint)
             # self.sensorState = np.zeros_like(self.sensorState)
             
-            
+        self.updateState()
 
 		# Store old variables
         self.time_old = self.time
