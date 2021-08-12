@@ -207,7 +207,7 @@ class line_follower(object):
 		
         # State Estimation Variables
         self.X = np.zeros(shape = (1, 6))
-        self.nextX = np.zeros_like(self.X)
+        self.X_hat = np.zeros_like(self.X)
         self.X_dot = np.zeros_like(self.X)
         self.Y_hat = np.zeros(shape = (1, 4))
         self.Y_sensor = np.zeros(shape = (1, 4))
@@ -918,7 +918,7 @@ class line_follower(object):
     
     def stateEst(self):
         # uses Y_i = C X_i ; X_dot_i = F_i X_i + B U_i
-        self.Y_hat = self.C @ self.X
+        self.Y_hat = self.C @ self.X_hat
         
         # Update Probability (A Priori)
         self.P = (self.F @ self.P) @ self.F.transpose() + self.V_noise
@@ -928,13 +928,12 @@ class line_follower(object):
         K_f = (self.P @ self.C.transpose()) @ linalg.inv(k1)
         
         # Calculate Probable State
-        self.X = self.nextX + K_f @ (self.Y_sensor - self.Y_hat)
+        self.X = self.X_hat + K_f @ (self.Y_sensor - self.Y_hat)
         
         # A posteriori probability
         self.P = (1 - (K_f @ self.C) ) @ self.P
         
         # update F
-        # TODO: Modeling may not be accurate here -> a lot of slip in these cars
         self.F[0][2] = np.cos(self.X[4]); self.F[0][3] = -np.sin(self.X[4])
         self.F[0][4] = -self.X[2]*np.sin(self.X[4]) - self.X[3]*np.cos(self.X[4])
         self.F[1][2] = np.sin(self.X[4]); self.F[1][3] = np.cos(self.X[4])
@@ -944,7 +943,7 @@ class line_follower(object):
         
         # Predict the next X
         self.X_dot = (self.F @ self.X) + (self.B @ self.U)
-        self.nextX = self.X + self.X_dot * self.dt
+        self.X_hat = self.X + self.X_dot * self.dt
         
         return
     
