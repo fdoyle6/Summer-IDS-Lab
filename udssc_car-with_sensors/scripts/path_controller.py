@@ -916,7 +916,7 @@ class line_follower(object):
     
     
     
-    def stateEst(self):
+    def updateState(self):
         # uses Y_i = C X_i ; X_dot_i = F_i X_i + B U_i
         self.Y_hat = self.C @ self.X_hat
         
