@@ -675,6 +675,23 @@ class line_follower(object):
         self.vSpeed = self.velocity_current 
         self.vTime = rospy.get_time()
         
+        # Waypoint Data
+        self.desiredX = self.position_desired[0]; self.desiredY = self.position_desired[1]
+        self.desiredVhead = self.velocity_desired; self.desiredVlat = 0.0; 
+        self.desiredTheta = yaw_next; self.desiredTheta_dot = yaw_traj_rate
+        self.wTime = rospy.get_time()
+        
+        # Update state vector variables to see if needed to add to *.txt file
+        # self.ViconState = [ self.vX, self.vY, self.vTheta, self.vThetaDot, self.vSpeed ]
+        self.ViconState[0] = self.vX; self.ViconState[1] = self.vY; self.ViconState[2] = self.vTheta
+        self.ViconState[3] = self.vThetaDot; self.ViconState[4] = self.vSpeed
+        
+        # self.wayPoint = [ self.desiredX, self.desiredY, self.desiredVhead, self.desiredVlat, ...
+        #                   self.desiredTheta, self.desiredTheta_dot ]
+        self.wayPoint[0] = self.desiredX; self.wayPoint[1] = self.desiredY; self.wayPoint[2] = self.desiredVhead
+        self.wayPoint[3] = self.desiredVlat; self.wayPoint[4] = self.desiredTheta
+        self.wayPoint[5] = self.desiredTheta_dot
+        
         # Recieve the data from the Arduino
         while self.sensorString == '':
             self.sensorString = self.ser.readline()
@@ -693,17 +710,6 @@ class line_follower(object):
         self.batteryVoltage = float(self.sensorData[10]); self.sTime = rospy.get_time()
         
         self.sensorString = ''
-
-    	# Waypoint Data
-        self.desiredX = self.position_desired[0]; self.desiredY = self.position_desired[1]
-        self.desiredVhead = self.velocity_desired; self.desiredVlat = 0.0; 
-        self.desiredTheta = yaw_next; self.desiredTheta_dot = yaw_traj_rate
-        self.wTime = rospy.get_time()
-        
-        # Update state vector variables to see if needed to add to *.txt file
-        # self.ViconState = [ self.vX, self.vY, self.vTheta, self.vThetaDot, self.vSpeed ]
-        self.ViconState[0] = self.vX; self.ViconState[1] = self.vY; self.ViconState[2] = self.vTheta
-        self.ViconState[3] = self.vThetaDot; self.ViconState[4] = self.vSpeed
         
         # self.sensorState = [ self.sVelo, self.sAccel0, self.sAccel1, self.sAccel2, self.sMag0, ...
         #                      self.sMag1, self.sMag2, self.sGyro0, self.sGyro1, self.sGyro2 ]
@@ -711,12 +717,6 @@ class line_follower(object):
         self.sensorState[3] = self.sAccel2; self.sensorState[4] = self.sMag0; self.sensorState[5] = self.sMag1
         self.sensorState[6] = self.sMag2; self.sensorState[7] = self.sGyro0; self.sensorState[8] = self.sGyro1
         self.sensorState[9] = self.sGyro2
-        
-        # self.wayPoint = [ self.desiredX, self.desiredY, self.desiredVhead, self.desiredVlat, ...
-        #                   self.desiredTheta, self.desiredTheta_dot ]
-        self.wayPoint[0] = self.desiredX; self.wayPoint[1] = self.desiredY; self.wayPoint[2] = self.desiredVhead
-        self.wayPoint[3] = self.desiredVlat; self.wayPoint[4] = self.desiredTheta
-        self.wayPoint[5] = self.desiredTheta_dot
 		
         global recordingData, file1, file2, file3
         if recordingData:        
