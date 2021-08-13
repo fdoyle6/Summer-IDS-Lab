@@ -128,6 +128,7 @@ class line_follower(object):
         self.yaw_traj_new = 0
         self.yaw_traj_old = 0
         self.t0 = rospy.get_time()
+        self.phi = 0.0
 
 		# Running variables
 		# vicon and sensor data variables
@@ -209,23 +210,22 @@ class line_follower(object):
         self.X = np.zeros(shape = (1, 6))
         self.X_hat = np.zeros_like(self.X)
         self.X_dot = np.zeros_like(self.X)
-        self.U = np.zeros(shape = (1, 4))
+        self.U = np.zeros(shape = (1, 3))
         self.Y_hat = np.zeros(shape = (1, 4))
         self.Y_sensor = np.zeros(shape = (1, 4))
         self.dt = 25/1000   # ~ 25 milliseconds (may want to measure)
         
         # State Estimation Probability
         self.P = np.zeros_like(self.X)
-        # self.newUpdate = False
         
         # Dynamical Model Matrices
         self.F = np.zeros(shape = (6, 6)); self.F[4][5] = 1  # this changes every iteration so just declare the variable
-        self.B = np.array([ [0, 0, 0, 0], # static matrix
-                           [0, 0, 0, 0],
-                           [1, 0, 0, 0],
-                           [0, 1, 0, 0],
-                           [0, 0, 1, 0],
-                           [0, 0, 0, 1] ])
+        self.B = np.array([ [0, 0, 0], # static matrix
+                           [0, 0, 0],
+                           [1, 0, 0],
+                           [0, 0, 0],
+                           [0, 1, 0],
+                           [0, 0, 1] ])
         
         self.C = np.zeros((4, 6))   # Also static so hard-coded
         self.C[0][2] = 1; self.C[1][3] = 1; self.C[2][4] = 1; self.C[3][5] = 1
@@ -586,13 +586,10 @@ class line_follower(object):
         if not (mf_commands == self.dataString_old):
 			# interpret the commands (recieved VICON Update) & update the state variables
             self.msgParser(mf_commands)
-            # self.newUpdate = True
             self.P = np.ones_like(self.P)   # Probability of being at the vicon state is 100%
             
             self.X[0] = self.vicon_pos[0]; self.X[1] = self.vicon_pos[1]
-            # TODO: add in correct state variables for v^H & v^L
-            self.X[2] = self.X[2]; self.X[3] = self.X[3]
-            # TODO: figure out if these variables need to be fixed
+            self.X[2] = self.vicon_speed*np.cos(self.phi) ; self.X[3] = self.vicon_speed*np.sin(self.phi)
             self.X[4] = self.euler; self.X[5] = self.vicon_yawrate
             
             self.updateF()
@@ -603,11 +600,9 @@ class line_follower(object):
             self.X_dot = (self.F @ self.X) + (self.B @ self.U)
             self.X_hat = self.X + self.X_dot * self.dt
         else:
-            # self.newUpdate = False
             self.estimateState()
             self.vicon_pos[0] = self.X[0]; self.vicon_pos[1] = self.X[1]
-            # TODO: Figure out v^H & v^L state variables
-            self.X[2] = self.X[2]; self.X[3] = self.X[3]
+            self.vicon_speed = np.abs(self.X[2] + 1j*self.X[3])
             self.euler = self.X[4]; self.vicon_yawrate = self.X[5]
             
 
@@ -645,6 +640,7 @@ class line_follower(object):
 
 		# Steering controllers
         steering_angle = self.stanleyControl(theta_e, self.velocity_desired, y_e, dydt_des)
+        self.phi = steering_angle
 
         print("################################################")
         print("STEER ANGLE\t" + str(steering_angle * 180 / math.pi))
@@ -771,6 +767,7 @@ class line_follower(object):
                     d_time = time_stamp[i+1] - time_stamp[i]
                     d_velocity = velocity_profile[i+1] - velocity_profile[i]
                     acceleration = d_velocity/d_time
+                    self.U[0] = acceleration
                     DESIRED_SPEED = velocity_profile[i] + acceleration * (experiment_time - time_stamp[i])
 
 #		print str(DESIRED_SPEED) + " @@@@ " + str(experiment_time)
