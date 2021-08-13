@@ -209,6 +209,7 @@ class line_follower(object):
         self.X = np.zeros(shape = (1, 6))
         self.X_hat = np.zeros_like(self.X)
         self.X_dot = np.zeros_like(self.X)
+        self.U = np.zeros(shape = (1, 4))
         self.Y_hat = np.zeros(shape = (1, 4))
         self.Y_sensor = np.zeros(shape = (1, 4))
         self.dt = 25/1000   # ~ 25 milliseconds (may want to measure)
@@ -583,14 +584,31 @@ class line_follower(object):
             return
 
         if not (mf_commands == self.dataString_old):
-			# interpret the commands (recieved VICON Update)
+			# interpret the commands (recieved VICON Update) & update the state variables
             self.msgParser(mf_commands)
             # self.newUpdate = True
             self.P = np.ones_like(self.P)   # Probability of being at the vicon state is 100%
             
+            self.X[0] = self.vicon_pos[0]; self.X[1] = self.vicon_pos[1]
+            # TODO: add in correct state variables for v^H & v^L
+            self.X[2] = self.X[2]; self.X[3] = self.X[3]
+            # TODO: figure out if these variables need to be fixed
+            self.X[4] = self.euler; self.X[5] = self.vicon_yawrate
+            
+            self.updateF()
+            
+            # TODO: figure out how to get U saved
+            self.U = self.U
+            
+            self.X_dot = (self.F @ self.X) + (self.B @ self.U)
+            self.X_hat = self.X + self.X_dot * self.dt
         else:
             # self.newUpdate = False
             self.estimateState()
+            self.vicon_pos[0] = self.X[0]; self.vicon_pos[1] = self.X[1]
+            # TODO: Figure out v^H & v^L state variables
+            self.X[2] = self.X[2]; self.X[3] = self.X[3]
+            self.euler = self.X[4]; self.vicon_yawrate = self.X[5]
             
 
         if (self.cmd_type == "MAN"):
@@ -866,8 +884,6 @@ class line_follower(object):
         # Poll Arduino for Sensor Data
         self.ser.write('1')
         
-        
-        
         # uses Y_i = C X_i ; X_dot_i = F_i X_i + B U_i
         self.Y_hat = self.C @ self.X_hat
         
@@ -877,6 +893,8 @@ class line_follower(object):
         # Calculate the Kalman Gain
         k1 = (self.C @ self.P) @ self.C.transpose() + self.V_noise
         K_f = (self.P @ self.C.transpose()) @ linalg.inv(k1)
+        
+        self.collectMeasurements()
         
         # Calculate Probable State & update X
         self.X = self.X_hat + K_f @ (self.Y_sensor - self.Y_hat)
@@ -965,12 +983,50 @@ class line_follower(object):
     
     
     def updateF(self):
+        '''Update the F Jacobian Matrix with the data from X'''
         self.F[0][2] = np.cos(self.X[4]); self.F[0][3] = -np.sin(self.X[4])
         self.F[0][4] = -self.X[2]*np.sin(self.X[4]) - self.X[3]*np.cos(self.X[4])
         self.F[1][2] = np.sin(self.X[4]); self.F[1][3] = np.cos(self.X[4])
         self.F[1][4] = self.X[2]*np.cos(self.X[4]) - self.X[3]*np.sin(self.X[4])
         self.F[2][3] = self.X[5]; self.F[2][5] = self.X[2]
         self.F[3][2] = self.X[5]; self.F[3][5] = self.X[3]
+        
+        
+        
+    def collectMeasurements(self):
+        ''' Collect the data from the sensors, run conversions, and compile into Y 
+        (assumes sensors were paged already to save computational time) '''
+        
+        # Collect data from sensors
+        while self.sensorString[-1] != '\n':
+            print('Trying to record data')
+            self.sensorString = self.sensorString + self.ser.readline()
+            
+        self.sensorData = self.sensorString.split(',')
+        
+        # TODO: Take out unnecessary variables
+        self.sVelo = float(self.sensorData[0]); self.sAccel0 = float(self.sensorData[1])
+        self.sAccel1 = float(self.sensorData[2]); self.sAccel2 = float(self.sensorData[3])
+        self.sMag0 = float(self.sensorData[4]); self.sMag1 = float(self.sensorData[5])
+        self.sMag2 = float(self.sensorData[6]); self.Gyro0 = float(self.sensorData[7])
+        self.sGyro1 = float(self.sensorData[8]); self.sGyro2 = float(self.sensorData[9])
+        
+        
+        # Convert the data to the right units
+        self.sAccel0 *= 9.81/16384; self.sAccel1 *= 9.81/16384; self.sAccel2 *= 9.81/16384
+        self.sMag0 *= 1; self.sMag1 *= 1; self.sMag2 *= 1    # TODO: Update these multipliers/conversions
+        self.sGyro0 *= (np.pi/2)/10285; self.sGyro1 *= (np.pi/2)/10285; self.sGyro2 *= (np.pi/2)/10285
+        
+        
+        # Compile into Y
+        # TODO: Update these once the conversion variables are finalized
+        self.Y[0] = self.sVelo; self.Y[1] = self.Y[1]
+        self.Y[2] = self.Y[2]; self.Y[3]
+        
+        return
+            
+        
+            
         
 
 ########## SOCKET TO READ MAINFRAME DATA #########
