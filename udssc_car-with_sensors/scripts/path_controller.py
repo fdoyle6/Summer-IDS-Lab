@@ -41,9 +41,9 @@ code_version = "2.5"
 # Data file names - NOTE: Change N & X each run
 global file1_name, file2_name, file3_name, file1, file2, file3, recordingData
 
-recordingData = 1 	# if recording and exporting data = 1 (True) if not 0 (False)
+recordingData = True
 
-runNumber = '1' #Run number and car number for exported data files
+runNumber = '2' #Run number and car number for exported data files
 carNumber = '3'
 
 file1_name = 'data_collection/VICON_Data-Run_' + runNumber + '-Car_Number_' + carNumber +'.txt'
@@ -191,8 +191,11 @@ class line_follower(object):
         self.o_desiredT = 0.0
        
         self.batteryVoltage = 0.0	
-	
-        global recordingData
+        
+        '''u_in = input('Would you like to record the data from this experiment? (y/n)')
+        if u_in.lower() == 'y':
+            global recordingData
+            recordingData = True   '''    
         
     	# comparison vectors (time not included in state vector)
         if recordingData:
@@ -978,7 +981,7 @@ class line_follower(object):
         self.sensorState[6] = self.sMag2; self.sensorState[7] = self.sGyro0; self.sensorState[8] = self.sGyro1
         self.sensorState[9] = self.sGyro2
 		
-        global recordingData, file1, file2, file3
+        global file1, file2, file3
         
         saveData(file1, self.vTime, self.ViconState)
         saveData(file2, self.sTime, self.sensorState)
@@ -1138,6 +1141,8 @@ def saveData(file_obj, time, stateVec):
     saveString += '\n'; # print(saveString)
     file_obj.write(saveString); file_obj.flush()
     saveString = '\0'         # just for scoping stuff
+
+
 
 
 if __name__ == '__main__':
