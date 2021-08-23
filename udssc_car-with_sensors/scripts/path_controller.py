@@ -128,7 +128,9 @@ class line_follower(object):
         self.yaw_traj_new = 0
         self.yaw_traj_old = 0
         self.t0 = rospy.get_time()
+        
         self.phi = 0.0
+        self.phi_dot = 0.0
 
 		# Running variables
 		# vicon and sensor data variables
@@ -190,21 +192,24 @@ class line_follower(object):
        
         self.batteryVoltage = 0.0	
 	
-    	# comparison vectors (time not included in state vector)
-        self.ViconState = np.array([ self.vX, self.vY, self.vTheta, self.vThetaDot, self.vSpeed ])
-        self.sensorState = np.array([ self.sVelo, self.sAccel0, self.sAccel1, self.sAccel2, self.sMag0,
-                             self.sMag1, self.sMag2, self.sGyro0, self.sGyro1, self.sGyro2 ])
-        self.wayPoint = np.array([ self.desiredX, self.desiredY, self.desiredVhead, self.desiredVlat, self.desiredTheta, 
-                                  self.desiredTheta_dot ])
+        global recordingData
         
+    	# comparison vectors (time not included in state vector)
+        if recordingData:
+            self.ViconState = np.array([ self.vX, self.vY, self.vTheta, self.vThetaDot, self.vSpeed ])
+            self.sensorState = np.array([ self.sVelo, self.sAccel0, self.sAccel1, self.sAccel2, self.sMag0,
+                                         self.sMag1, self.sMag2, self.sGyro0, self.sGyro1, self.sGyro2 ])
+            self.wayPoint = np.array([ self.desiredX, self.desiredY, self.desiredVhead, self.desiredVlat, self.desiredTheta, 
+                                      self.desiredTheta_dot ])
+
+            self.oldViconState =  np.array([ self.o_vX, self.o_vY, self.o_vTheta, self.o_vThetaDot, self.o_vSpeed ])
+            self.oldSensorState = np.array([ self.o_sVelo, self.o_sAccel0, self.o_sAccel1, self.o_sAccel2, self.o_sMag0, 
+                                            self.o_sMag1, self.o_sMag2, self.o_sGyro0, self.o_sGyro1, self.o_sGyro2 ])
+            self.oldWayPoint = np.array([ self.o_desiredX, self.o_desiredY, self.o_desiredVhead, self.o_desiredVlat, 
+                                         self.o_desiredTheta, self.o_desiredTheta_dot ])
+           
         self.sensorString = ''
         self.sensorData = ['', '']
-
-        self.oldViconState =  np.array([ self.o_vX, self.o_vY, self.o_vTheta, self.o_vThetaDot, self.o_vSpeed ])
-        self.oldSensorState = np.array([ self.o_sVelo, self.o_sAccel0, self.o_sAccel1, self.o_sAccel2, self.o_sMag0, 
-                               self.o_sMag1, self.o_sMag2, self.o_sGyro0, self.o_sGyro1, self.o_sGyro2 ])
-       	self.oldWayPoint = np.array([ self.o_desiredX, self.o_desiredY, self.o_desiredVhead, self.o_desiredVlat, 
-                                     self.o_desiredTheta, self.o_desiredTheta_dot ])
 		
         # State Estimation Variables
         self.X = np.zeros(shape = (1, 6))
@@ -213,7 +218,7 @@ class line_follower(object):
         self.U = np.zeros(shape = (1, 3))
         self.Y_hat = np.zeros(shape = (1, 4))
         self.Y_sensor = np.zeros(shape = (1, 4))
-        self.dt = 25/1000   # ~ 25 milliseconds (may want to measure)
+        self.dt = 25/1000   # ~ 25 milliseconds (updates every loop)
         
         # State Estimation Probability
         self.P = np.zeros_like(self.X)
@@ -270,10 +275,12 @@ class line_follower(object):
         self.antiwindup = 0.0125#0.0005 #maximum integral value
         self.k_p = 0.1225#0.0255
         self.k_i = 0.015
+        
 		#saved control parameters
         self.pos_err_i = 0
         self.last_pos_err = 0
-		# SMC
+		
+        # SMC
 		# s = y_eDot + k*y_e + k0*sign(y_e)*theta_e
         self.Q = 1.0 #num, multiplies s {1}
         self.P = 1.0  #num, multiplies sign(s) {1}
@@ -321,7 +328,6 @@ class line_follower(object):
 
 
 		# Create files if collecting data
-        global recordingData
         print(recordingData)
         if recordingData:
             global file1, file2, file3;
@@ -343,6 +349,7 @@ class line_follower(object):
         rospy.loginfo("Initialization complete!")
         rospy.loginfo("Using code version: " + code_version)
         time.sleep(1)
+
 
     def reset(self):
         self.dataString_old = ""
@@ -589,7 +596,7 @@ class line_follower(object):
             self.P = np.ones_like(self.P)   # Probability of being at the vicon state is 100%
             
             self.X[0] = self.vicon_pos[0]; self.X[1] = self.vicon_pos[1]
-            self.X[2] = self.vicon_speed*np.cos(self.phi) ; self.X[3] = self.vicon_speed*np.sin(self.phi)
+            self.X[2] = self.vicon_speed*np.cos(self.phi); self.X[3] = self.vicon_speed*np.sin(self.phi)
             self.X[4] = self.euler; self.X[5] = self.vicon_yawrate
             
             self.updateF()
@@ -630,7 +637,7 @@ class line_follower(object):
         y_e, theta_e = self.calcError()
 		
 		#calculate desired yaw rate
-        dt = self.time - self.time_old
+        dt = self.time - self.time_old; self.dt = dt
         dr = (self.velocity_desired + self.velocity_current)/2 * dt
         pos_next, dR_next = self.evalPath(self.r + dr) 
         yaw_next = atan2(dR_next[1], dR_next[0])
@@ -639,8 +646,7 @@ class line_follower(object):
 
 
 		# Steering controllers
-        steering_angle = self.stanleyControl(theta_e, self.velocity_desired, y_e, dydt_des)
-        self.phi = steering_angle
+        steering_angle = self.stanleyControl(theta_e, self.velocity_desired, y_e, dydt_des)        
 
         print("################################################")
         print("STEER ANGLE\t" + str(steering_angle * 180 / math.pi))
@@ -664,10 +670,18 @@ class line_follower(object):
         if  self.velocity_desired <= 0.001:
             velocity = 0.0
             steering_angle = 0.0
+            
+            
+        # Update theta-double-dot in U
+        d_phi = steering_angle - self.phi
+        self.phi_dot = d_phi/dt
+        self.U[2] = self.U[0]*np.tan(self.phi)/(self.car_length) + self.X[2]*self.phi_dot/(self.car_length*(np.cos(self.phi)**2))
+        
+        # Update theta-dot in U
+        self.phi = steering_angle
+        self.U[1] = self.X[2]*np.tan(self.phi)/(self.car_length) # uses bike model
 	
 		# Create the serial message to the arduino and write
-		 
-
         motor_comm = [float(steering_angle),float(velocity)]
 	
         print(velocity, "\t*********************")
@@ -788,6 +802,7 @@ class line_follower(object):
         """ Turn off motor on shutdown """
         self.ser.write("0,0;")
         self.ser.close()
+        global file1, file2, file3
         file1.close(); file2.close(); file3.close()
         exit()
 
@@ -799,7 +814,7 @@ class line_follower(object):
         steer =  (psi - self.sk_ag * self.velocity_current * yaw_dot_desired) + atan2(num,den) - self.sk_yaw*(self.yaw_dot - yaw_dot_desired)
 
         steer_final = steer + self.sk_steer * (steer - self.prev_steer * 3.14 / 180) #steering is converted to degrees outside of this function somewhere...
-
+        
         print( "*****STANLEY*****" )
         print( "Psi Value\t" + str(psi*180/3.14))
         print( "Sk_ag term\t"+str(-self.sk_ag*SpeedDesired*yaw_dot_desired*180/3.14))
@@ -881,6 +896,10 @@ class line_follower(object):
         # Poll Arduino for Sensor Data
         self.ser.write('1')
         
+        # Predict the current X
+        self.X_dot = (self.F @ self.X) + (self.B @ self.U)
+        self.X_hat = self.X + self.X_dot * self.dt
+        
         # uses Y_i = C X_i ; X_dot_i = F_i X_i + B U_i
         self.Y_hat = self.C @ self.X_hat
         
@@ -900,11 +919,7 @@ class line_follower(object):
         self.P = (1 - (K_f @ self.C) ) @ self.P
         
         # update F
-        self.updateF()
-        
-        # Predict the next X
-        self.X_dot = (self.F @ self.X) + (self.B @ self.U)
-        self.X_hat = self.X + self.X_dot * self.dt
+        self.updateF()       
         
         return
     
@@ -917,7 +932,7 @@ class line_follower(object):
         self.ser.write('1')
         
     	# probably don't need new variables?
-        # give the Arduino a tiny delay to send all of the data
+        # give the Arduino a delay to send all of the data
         self.vX = self.pos[0][0]
         self.vY = self.pos[0][1]
         self.vTheta = self.pos[1][2] 
@@ -988,6 +1003,8 @@ class line_follower(object):
         self.F[2][3] = self.X[5]; self.F[2][5] = self.X[2]
         self.F[3][2] = self.X[5]; self.F[3][5] = self.X[3]
         
+        return
+        
         
         
     def collectMeasurements(self):
@@ -1018,7 +1035,7 @@ class line_follower(object):
         # Compile into Y
         # TODO: Update these once the conversion variables are finalized
         self.Y[0] = self.sVelo; self.Y[1] = self.Y[1]
-        self.Y[2] = self.Y[2]; self.Y[3]
+        self.Y[2] = self.Y[2]; self.Y[3] = self.Y[3]
         
         return
             
