@@ -192,10 +192,10 @@ class line_follower(object):
        
         self.batteryVoltage = 0.0	
         
-        '''u_in = input('Would you like to record the data from this experiment? (y/n)')
+        ''' u_in = input('Would you like to record the data from this experiment? (y/n)')
         if u_in.lower() == 'y':
             global recordingData
-            recordingData = True   '''    
+            recordingData = True ''' 
         
     	# comparison vectors (time not included in state vector)
         if recordingData:
@@ -222,9 +222,10 @@ class line_follower(object):
         self.Y_hat = np.zeros(shape = (1, 4))
         self.Y_sensor = np.zeros(shape = (1, 4))
         self.dt = 25/1000   # ~ 25 milliseconds (updates every loop)
+        self.loops_without_vicon = 0
         
         # State Estimation Probability
-        self.P = np.zeros_like(self.X)
+        self.P = np.zeros(shape = (6, 6))
         
         # Dynamical Model Matrices
         self.F = np.zeros(shape = (6, 6)); self.F[4][5] = 1  # this changes every iteration so just declare the variable
@@ -596,7 +597,8 @@ class line_follower(object):
         if (mf_commands != self.dataString_old):
 			# interpret the commands (recieved VICON Update) & update the state variables            
             self.msgParser(mf_commands)
-            self.P = np.ones_like(self.P)   # Probability of being at the vicon state is 100%
+            self.P = np.zeros_like(self.P)   # Uncertainty of being at the vicon state is 0
+            self.loops_without_vicon = 0
             
             self.X[0] = self.vicon_pos[0]; self.X[1] = self.vicon_pos[1]
             self.X[2] = self.vicon_speed*np.cos(self.phi); self.X[3] = self.vicon_speed*np.sin(self.phi)
@@ -605,6 +607,8 @@ class line_follower(object):
             self.updateF()
         else:
             self.estimateState()
+            
+            self.loops_without_vicon += 1
             
             self.vicon_pos[0] = self.X[0]; self.vicon_pos[1] = self.X[1]
             self.vicon_speed = np.abs(self.X[2] + 1j*self.X[3])
@@ -911,7 +915,7 @@ class line_follower(object):
         self.collectMeasurements()
         
         # Calculate Probable State & update X
-        self.X = self.X_hat + K_f @ (self.Y_sensor - self.Y_hat)
+        self.X = self.X_hat + K_f @ (self.Y_sensor - self.K_y()*self.Y_hat)
         
         # A posteriori probability
         self.P = (1 - (K_f @ self.C) ) @ self.P
@@ -1036,6 +1040,13 @@ class line_follower(object):
         self.Y[2] = self.Y[2]; self.Y[3] = self.Y[3]
         
         return
+    
+    
+    def K_y(self):
+        '''Unfinished: scales the predicted Y value based off how many loops have occurred
+        since the last update from vicon (should be 0 < K_y <= 1)'''
+        # TODO: Finish this with a nice function (maybe 1/x or something)
+        return 1
             
         
             
