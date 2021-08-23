@@ -590,8 +590,8 @@ class line_follower(object):
             self.ser.write(str(0) + ',-' + str(0) + ';')
             return
 
-        if not (mf_commands == self.dataString_old):
-			# interpret the commands (recieved VICON Update) & update the state variables
+        if (mf_commands != self.dataString_old):
+			# interpret the commands (recieved VICON Update) & update the state variables            
             self.msgParser(mf_commands)
             self.P = np.ones_like(self.P)   # Probability of being at the vicon state is 100%
             
@@ -600,14 +600,9 @@ class line_follower(object):
             self.X[4] = self.euler; self.X[5] = self.vicon_yawrate
             
             self.updateF()
-            
-            # TODO: figure out how to get U saved
-            self.U = self.U
-            
-            self.X_dot = (self.F @ self.X) + (self.B @ self.U)
-            self.X_hat = self.X + self.X_dot * self.dt
         else:
             self.estimateState()
+            
             self.vicon_pos[0] = self.X[0]; self.vicon_pos[1] = self.X[1]
             self.vicon_speed = np.abs(self.X[2] + 1j*self.X[3])
             self.euler = self.X[4]; self.vicon_yawrate = self.X[5]
@@ -675,7 +670,7 @@ class line_follower(object):
         # Update theta-double-dot in U
         d_phi = steering_angle - self.phi
         self.phi_dot = d_phi/dt
-        self.U[2] = self.U[0]*np.tan(self.phi)/(self.car_length) + self.X[2]*self.phi_dot/(self.car_length*(np.cos(self.phi)**2))
+        self.U[2] = self.X_dot[2]*np.tan(self.phi)/(self.car_length) + self.X[2]*self.phi_dot/(self.car_length*(np.cos(self.phi)**2))
         
         # Update theta-dot in U
         self.phi = steering_angle
@@ -900,11 +895,11 @@ class line_follower(object):
         self.X_dot = (self.F @ self.X) + (self.B @ self.U)
         self.X_hat = self.X + self.X_dot * self.dt
         
-        # uses Y_i = C X_i ; X_dot_i = F_i X_i + B U_i
-        self.Y_hat = self.C @ self.X_hat
-        
         # Update Probability (A Priori)
         self.P = (self.F @ self.P) @ self.F.transpose() + self.V_dist
+        
+        # uses Y_i = C X_i ; X_dot_i = F_i X_i + B U_i
+        self.Y_hat = self.C @ self.X_hat
         
         # Calculate the Kalman Gain
         k1 = (self.C @ self.P) @ self.C.transpose() + self.V_noise
