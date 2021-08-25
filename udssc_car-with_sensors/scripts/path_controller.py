@@ -226,6 +226,7 @@ class line_follower(object):
         
         # State Estimation Probability
         self.P = np.zeros(shape = (6, 6))
+        self.I = np.identity(like = self.P)
         
         # Dynamical Model Matrices
         self.F = np.zeros(shape = (6, 6)); self.F[4][5] = 1  # this changes every iteration so just declare the variable
@@ -918,7 +919,7 @@ class line_follower(object):
         self.X = self.X_hat + K_f @ (self.Y_sensor - self.K_y()*self.Y_hat)
         
         # A posteriori probability
-        self.P = (np.identity(like = self.P) - (K_f @ self.C) ) @ self.P
+        self.P = (self.I - (K_f @ self.C) ) @ self.P
         
         # update F
         self.updateF()       
