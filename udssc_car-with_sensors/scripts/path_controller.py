@@ -918,7 +918,7 @@ class line_follower(object):
         self.X = self.X_hat + K_f @ (self.Y_sensor - self.K_y()*self.Y_hat)
         
         # A posteriori probability
-        self.P = (1 - (K_f @ self.C) ) @ self.P
+        self.P = (np.identity(like = self.P) - (K_f @ self.C) ) @ self.P
         
         # update F
         self.updateF()       
